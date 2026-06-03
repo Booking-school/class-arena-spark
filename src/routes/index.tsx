@@ -5,10 +5,14 @@ import {
   ArrowRight,
   BookOpen,
   Bot,
+  Building2,
   Calendar,
   CheckCircle2,
   ClipboardCheck,
   DoorOpen,
+  GraduationCap,
+  KeyRound,
+  LogIn,
   MonitorPlay,
   ShieldCheck,
   Sparkles,
@@ -37,17 +41,29 @@ function Landing() {
           <div className="flex flex-wrap items-center justify-end gap-2">
             <LanguageSwitcher />
             {user ? (
-              <Button asChild>
-                <Link to="/dashboard">{tr("เข้าสู่แดชบอร์ด")}</Link>
-              </Button>
-            ) : (
               <>
-                <Button asChild variant="ghost">
-                  <Link to="/login">{tr("เข้าสู่ระบบ")}</Link>
+                <Button asChild variant="outline">
+                  <Link to="/book">
+                    <DoorOpen className="size-4" />
+                    {tr("จองห้อง")}
+                  </Link>
                 </Button>
                 <Button asChild>
-                  <Link to="/login" search={{ mode: "signup" }}>
-                    {tr("สมัครสมาชิก")}
+                  <Link to="/dashboard">{tr("เข้าสู่แดชบอร์ด")}</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="outline">
+                  <Link to="/book">
+                    <DoorOpen className="size-4" />
+                    {tr("จองห้อง")}
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/login">
+                    <LogIn className="size-4" />
+                    {tr("เข้าห้องเรียน")}
                   </Link>
                 </Button>
               </>
@@ -57,34 +73,42 @@ function Landing() {
       </header>
 
       <main>
-        <section className="mx-auto max-w-6xl px-5 py-12 sm:px-6 lg:py-16">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
-              <MonitorPlay className="size-4" />
-              {tr("Connected classroom สำหรับโรงเรียนไทย")}
+        <section className="relative overflow-hidden border-b border-border/70">
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-primary/25"
+            aria-hidden
+          />
+          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:py-14">
+            <div className="scholar-entrance max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
+                <MonitorPlay className="size-4" />
+                {tr("Connected classroom สำหรับโรงเรียนไทย")}
+              </div>
+              <h1 className="mt-6 text-5xl font-semibold leading-[1.05] text-balance sm:text-6xl">
+                Scholar Hall
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground text-pretty">
+                {tr(
+                  "ศูนย์กลางสำหรับจองห้องประชุมและห้องเรียนเกมมิฟาย ครู นักเรียน ผู้จอง และแอดมินเห็นทางเข้าที่ต้องใช้ได้ทันที",
+                )}
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <Button asChild className="min-h-12" size="lg">
+                  <Link to="/book">
+                    <DoorOpen className="size-4" />
+                    {tr("จองห้องประชุม")}
+                  </Link>
+                </Button>
+                <Button asChild className="min-h-12" size="lg" variant="outline">
+                  <Link to={user ? "/classrooms" : "/login"}>
+                    <BookOpen className="size-4" />
+                    {user ? tr("เปิดห้องเรียน") : tr("เข้าสู่ระบบห้องเรียน")}
+                  </Link>
+                </Button>
+              </div>
             </div>
-            <h1 className="mt-6 text-5xl font-semibold leading-[1.05] text-balance sm:text-6xl">
-              Scholar Hall
-            </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground text-pretty">
-              {tr(
-                "เชื่อมห้องเรียน ห้องประชุม เควสต์การเรียนรู้ AI ผู้ช่วย และงานแอดมินให้อยู่ในจังหวะเดียวกัน ครู นักเรียน และทีมดูแลระบบเห็นงานสำคัญก่อนเสมอ",
-              )}
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Button asChild size="lg">
-                <Link to="/book">
-                  <DoorOpen className="size-4" />
-                  {tr("เริ่มจองห้อง")}
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to={user ? "/classrooms" : "/login"}>
-                  <BookOpen className="size-4" />
-                  {user ? tr("เปิดห้องเรียน") : tr("เข้าห้องเรียน")}
-                </Link>
-              </Button>
-            </div>
+
+            <EntryGateway isSignedIn={!!user} />
           </div>
 
           <ProductPreview />
@@ -162,9 +186,78 @@ function Landing() {
   );
 }
 
+function EntryGateway({ isSignedIn }: { isSignedIn: boolean }) {
+  return (
+    <div className="scholar-entrance scholar-entrance-delay-1">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
+          <Sparkles className="size-4 text-gold" />
+          {tr("เลือกทางเข้า")}
+        </div>
+        <span className="hidden text-sm text-muted-foreground sm:inline">
+          {tr("Public + Classroom")}
+        </span>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <article className="scholar-spotlight-card scholar-sheen rounded-lg border bg-card p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <span className="inline-flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <Building2 className="size-5" />
+            </span>
+            <span className="rounded-full border border-primary/20 bg-background px-2.5 py-1 text-xs font-medium text-primary">
+              {tr("Public")}
+            </span>
+          </div>
+          <h2 className="mt-5 text-2xl font-semibold leading-tight">{tr("ห้องประชุม")}</h2>
+          <p className="mt-2 min-h-12 text-sm leading-relaxed text-muted-foreground">
+            {tr("จองห้องประชุมและส่งคำขอใช้งานได้ทันที โดยไม่ต้องเข้าสู่ระบบ")}
+          </p>
+          <Button asChild className="mt-5 min-h-12 w-full" size="lg">
+            <Link to="/book">
+              <DoorOpen className="size-4" />
+              {tr("จองห้องประชุม")}
+            </Link>
+          </Button>
+        </article>
+
+        <article className="scholar-spotlight-card scholar-sheen rounded-lg border bg-card p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <span className="inline-flex size-11 items-center justify-center rounded-md bg-gold/15 text-gold">
+              <GraduationCap className="size-5" />
+            </span>
+            <span className="rounded-full border border-gold/25 bg-background px-2.5 py-1 text-xs font-medium text-foreground">
+              {isSignedIn ? tr("Ready") : tr("Login")}
+            </span>
+          </div>
+          <h2 className="mt-5 text-2xl font-semibold leading-tight">{tr("ห้องเรียน")}</h2>
+          <p className="mt-2 min-h-12 text-sm leading-relaxed text-muted-foreground">
+            {tr("ครูและนักเรียนเข้าสู่ระบบเพื่อจัดการห้อง เควสต์ คะแนน และ leaderboard")}
+          </p>
+          <div className="mt-5 grid gap-2">
+            <Button asChild className="min-h-12 w-full" size="lg">
+              <Link to={isSignedIn ? "/classrooms" : "/login"}>
+                <KeyRound className="size-4" />
+                {isSignedIn ? tr("เปิดห้องเรียน") : tr("เข้าสู่ระบบห้องเรียน")}
+              </Link>
+            </Button>
+            {!isSignedIn ? (
+              <Button asChild className="min-h-12 w-full" variant="outline">
+                <Link to="/login" search={{ mode: "signup" }}>
+                  {tr("สมัครสมาชิก")}
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            ) : null}
+          </div>
+        </article>
+      </div>
+    </div>
+  );
+}
+
 function ProductPreview() {
   return (
-    <div className="mx-auto mt-12 max-w-5xl overflow-hidden rounded-xl border bg-card">
+    <div className="scholar-entrance scholar-entrance-delay-2 scholar-spotlight-card mx-5 mb-10 max-w-5xl overflow-hidden rounded-lg border bg-card shadow-sm sm:mx-6 lg:mx-auto lg:mb-14">
       <div className="grid gap-3 border-b bg-secondary/70 px-4 py-3 text-sm sm:grid-cols-[1fr_auto] sm:items-center">
         <div>
           <span className="font-semibold text-foreground">{tr("Live classroom hub")}</span>
@@ -267,7 +360,7 @@ function ProofPoint({
 
 function RoleLine({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
   return (
-    <div className="rounded-xl border bg-card p-5 transition-colors hover:border-primary/35">
+    <div className="scholar-spotlight-card rounded-lg border bg-card p-5">
       <div className="flex items-start gap-3">
         <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
           {icon}
