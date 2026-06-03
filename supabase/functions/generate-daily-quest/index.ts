@@ -25,10 +25,37 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Role gate: only teachers/admins may invoke AI quest generation
+    const { data: roleRow } = await supa
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["teacher", "admin"])
+      .maybeSingle();
+    if (!roleRow) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...cors, "Content-Type": "application/json" },
+      });
+    }
+
     const { topic, content } = await req.json();
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
-    if (!content) throw new Error("content required");
+    if (!content || typeof content !== "string") throw new Error("content required");
+    // Cap input size to prevent abuse of AI credits
+    if (content.length > 10000) {
+      return new Response(JSON.stringify({ error: "content too long (max 10000 chars)" }), {
+        status: 413,
+        headers: { ...cors, "Content-Type": "application/json" },
+      });
+    }
+    if (typeof topic === "string" && topic.length > 500) {
+      return new Response(JSON.stringify({ error: "topic too long (max 500 chars)" }), {
+        status: 413,
+        headers: { ...cors, "Content-Type": "application/json" },
+      });
+    }
 
     const system = `คุณคือ AI ช่วยครูออกแบบ Daily Quest จากเนื้อหาที่สอน — คุณต้องออกแบบทุกอย่างเอง:
 - สร้างคำถามภาษาไทย 5 ข้อ จากเนื้อหานี้เท่านั้น ห้ามออกนอกเรื่อง
