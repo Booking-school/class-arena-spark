@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { TestimonialsMarquee } from "@/components/testimonials-marquee";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -325,6 +326,8 @@ function PublicBookPage() {
             </Card>
           )}
         </section>
+
+        <TestimonialsMarquee />
       </main>
     </div>
   );
