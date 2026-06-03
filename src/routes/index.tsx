@@ -20,6 +20,7 @@ import {
   Users,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { TestimonialsMarquee } from "@/components/testimonials-marquee";
 
 import { tr } from "@/i18n";
 
@@ -175,6 +176,8 @@ function Landing() {
             </div>
           </div>
         </section>
+
+        <TestimonialsMarquee />
       </main>
 
       <footer className="border-t border-border/70">
