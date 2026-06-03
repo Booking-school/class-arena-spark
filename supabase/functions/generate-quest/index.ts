@@ -25,9 +25,29 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Role gate: only teachers/admins may invoke AI quest generation
+    const { data: roleRow } = await supa
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["teacher", "admin"])
+      .maybeSingle();
+    if (!roleRow) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { topic } = await req.json();
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
+    if (typeof topic === "string" && topic.length > 500) {
+      return new Response(JSON.stringify({ error: "topic too long (max 500 chars)" }), {
+        status: 413,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
