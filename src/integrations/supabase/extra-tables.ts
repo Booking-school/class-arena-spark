@@ -90,8 +90,8 @@ type WeeklyMissionRecapRow = {
   classroom_id: string;
   user_id: string | null;
   audience: string;
-  summary: Json | null;
-  ai_summary: Json | null;
+  summary: string | null;
+  ai_summary: string | null;
   generated_at: Timestamp;
   created_by: string;
 };
@@ -116,7 +116,13 @@ type ExtraTables = {
   weekly_mission_teams: TableShape<WeeklyMissionTeamRow>;
   weekly_mission_team_members: TableShape<WeeklyMissionTeamMemberRow>;
   mission_progress: TableShape<MissionProgressRow>;
-  weekly_mission_recaps: TableShape<WeeklyMissionRecapRow>;
+  weekly_mission_recaps: TableShape<
+    WeeklyMissionRecapRow,
+    Omit<Partial<WeeklyMissionRecapRow>, "summary" | "ai_summary"> & {
+      summary?: Json | null;
+      ai_summary?: Json | null;
+    }
+  >;
   term_bonus_rules: TableShape<TermBonusRuleRow>;
 };
 
