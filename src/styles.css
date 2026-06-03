@@ -344,9 +344,7 @@
     animation-play-state: paused;
   }
 }
-    background-position: -70% 0;
-  }
-}
+
 
 @media (prefers-reduced-motion: reduce) {
   *,
