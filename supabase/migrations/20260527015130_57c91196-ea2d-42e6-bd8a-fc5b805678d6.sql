@@ -1,0 +1,1 @@
+CREATE POLICY "dq read classroom members" ON public.daily_quests FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.classroom_members cm WHERE cm.classroom_id = daily_quests.classroom_id AND cm.user_id = auth.uid()));

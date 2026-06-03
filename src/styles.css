@@ -1,0 +1,238 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bai Jamjuree", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-gold: var(--gold);
+  --color-xp: var(--xp);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Scholar Hall palette: teal-blue workspace, gold rewards, restrained success green */
+  --background: oklch(0.986 0.007 215);
+  --foreground: oklch(0.22 0.032 232);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.032 232);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.032 232);
+
+  --primary: oklch(0.51 0.145 207);
+  --primary-foreground: oklch(0.99 0.006 205);
+
+  --secondary: oklch(0.947 0.02 216);
+  --secondary-foreground: oklch(0.28 0.048 222);
+
+  --muted: oklch(0.94 0.016 216);
+  --muted-foreground: oklch(0.46 0.034 224);
+
+  --accent: oklch(0.915 0.048 205);
+  --accent-foreground: oklch(0.24 0.055 220);
+
+  --destructive: oklch(0.55 0.18 25);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.878 0.018 216);
+  --input: oklch(0.89 0.019 216);
+  --ring: oklch(0.55 0.15 207);
+
+  --gold: oklch(0.78 0.135 78); /* coin gold */
+  --xp: oklch(0.6 0.15 212);
+
+  --chart-1: oklch(0.51 0.145 207);
+  --chart-2: oklch(0.6 0.15 212);
+  --chart-3: oklch(0.78 0.135 78);
+  --chart-4: oklch(0.57 0.12 250);
+  --chart-5: oklch(0.58 0.12 330);
+
+  --sidebar: oklch(0.962 0.014 216);
+  --sidebar-foreground: oklch(0.26 0.043 226);
+  --sidebar-primary: oklch(0.51 0.145 207);
+  --sidebar-primary-foreground: oklch(0.99 0.006 205);
+  --sidebar-accent: oklch(0.925 0.029 214);
+  --sidebar-accent-foreground: oklch(0.24 0.055 220);
+  --sidebar-border: oklch(0.878 0.018 216);
+  --sidebar-ring: oklch(0.55 0.15 207);
+}
+
+.dark {
+  --background: oklch(0.17 0.038 226);
+  --foreground: oklch(0.95 0.01 216);
+  --card: oklch(0.225 0.04 226);
+  --card-foreground: oklch(0.95 0.01 216);
+  --popover: oklch(0.225 0.04 226);
+  --popover-foreground: oklch(0.95 0.01 216);
+  --primary: oklch(0.72 0.14 205);
+  --primary-foreground: oklch(0.15 0.04 226);
+  --secondary: oklch(0.28 0.045 226);
+  --secondary-foreground: oklch(0.94 0.012 216);
+  --muted: oklch(0.28 0.045 226);
+  --muted-foreground: oklch(0.74 0.035 216);
+  --accent: oklch(0.34 0.068 210);
+  --accent-foreground: oklch(0.94 0.012 216);
+  --destructive: oklch(0.6 0.18 25);
+  --destructive-foreground: oklch(0.95 0 0);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.72 0.14 205);
+  --gold: oklch(0.82 0.14 78);
+  --xp: oklch(0.7 0.14 210);
+  --sidebar: oklch(0.195 0.04 226);
+  --sidebar-foreground: oklch(0.94 0.012 216);
+  --sidebar-primary: oklch(0.72 0.14 205);
+  --sidebar-primary-foreground: oklch(0.15 0.04 226);
+  --sidebar-accent: oklch(0.28 0.05 226);
+  --sidebar-accent-foreground: oklch(0.94 0.012 216);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.72 0.14 205);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0;
+  }
+}
+
+@layer utilities {
+  .scholar-metric {
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .scholar-metric:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in oklch, var(--primary) 34%, var(--border));
+  }
+
+  .scholar-progress-ring {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .scholar-progress-ring::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    z-index: -1;
+    border-radius: inherit;
+    background: color-mix(in oklch, var(--xp) 20%, transparent);
+    animation: scholar-ring-breathe 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  .scholar-reward-cue {
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--gold) 22%, transparent);
+    animation: scholar-reward-cue 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  .scholar-complete-cue {
+    animation: scholar-complete-cue 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+}
+
+@keyframes scholar-ring-breathe {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes scholar-reward-cue {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--gold) 22%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--gold) 9%, transparent);
+  }
+}
+
+@keyframes scholar-complete-cue {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .scholar-progress-ring::after {
+    display: none;
+  }
+}

@@ -1,0 +1,1 @@
+ALTER TABLE public.classrooms ADD COLUMN IF NOT EXISTS grade_level text;

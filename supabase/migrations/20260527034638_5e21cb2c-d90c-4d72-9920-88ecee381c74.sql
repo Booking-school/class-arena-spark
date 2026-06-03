@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "dq read classroom members" ON public.daily_quests;

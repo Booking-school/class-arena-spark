@@ -1,0 +1,2 @@
+REVOKE ALL ON FUNCTION public.award_quest_attempt(UUID, JSONB, INT, INT, TEXT, JSONB) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.award_quest_attempt(UUID, JSONB, INT, INT, TEXT, JSONB) TO authenticated, service_role;

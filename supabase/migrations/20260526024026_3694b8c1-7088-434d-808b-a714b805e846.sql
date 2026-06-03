@@ -1,0 +1,2 @@
+ALTER TABLE public.materials ADD COLUMN IF NOT EXISTS lesson_id uuid REFERENCES public.lesson_contents(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_materials_lesson_id ON public.materials(lesson_id);
