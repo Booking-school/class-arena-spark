@@ -8,44 +8,46 @@ type Testimonial = {
   icon: React.ReactNode;
 };
 
-const testimonials: Testimonial[] = [
-  {
-    quote: tr("เด็กๆ ตื่นเต้นกับ Daily Quest ทุกเช้า ทำงานส่งเร็วขึ้นแบบไม่ต้องตามเลย"),
-    name: tr("ครูพิมพ์"),
-    role: tr("ครูประจำชั้น ป.5"),
-    icon: <ClipboardCheck className="size-4" />,
-  },
-  {
-    quote: tr("ชอบที่เก็บ XP กับเหรียญทองได้ เหมือนเล่นเกมแต่ได้ความรู้จริงๆ"),
-    name: tr("น้องเฟิร์น"),
-    role: tr("นักเรียน ม.2"),
-    icon: <GraduationCap className="size-4" />,
-  },
-  {
-    quote: tr("จองห้องประชุมในไม่กี่คลิก ระบบอนุมัติชัดเจน ไม่ต้องเดินเอกสารอีกแล้ว"),
-    name: tr("คุณอนันต์"),
-    role: tr("ผู้ปกครอง / ผู้จอง"),
-    icon: <BookOpen className="size-4" />,
-  },
-  {
-    quote: tr("เห็นภาพรวมผู้ใช้ ห้อง และคำขอจองในหน้าเดียว ลดงานซ้ำซ้อนได้เยอะมาก"),
-    name: tr("ครูใหญ่สมชาย"),
-    role: tr("ผู้ดูแลระบบ"),
-    icon: <ShieldCheck className="size-4" />,
-  },
-  {
-    quote: tr("AI ช่วยสรุปบทเรียน แล้วนักเรียนถามต่อได้เอง ครูมีเวลาดูเด็กที่ต้องช่วยจริงๆ"),
-    name: tr("ครูณัฐ"),
-    role: tr("ครูวิทยาศาสตร์"),
-    icon: <ClipboardCheck className="size-4" />,
-  },
-  {
-    quote: tr("Leaderboard ทำให้เพื่อนๆ ในห้องช่วยกันเรียน ไม่ใช่แข่งกันอย่างเดียว"),
-    name: tr("น้องภูมิ"),
-    role: tr("นักเรียน ม.3"),
-    icon: <GraduationCap className="size-4" />,
-  },
-];
+function getTestimonials(): Testimonial[] {
+  return [
+    {
+      quote: tr("เด็กๆ ตื่นเต้นกับ Daily Quest ทุกเช้า ทำงานส่งเร็วขึ้นแบบไม่ต้องตามเลย"),
+      name: tr("ครูพิมพ์"),
+      role: tr("ครูประจำชั้น ป.5"),
+      icon: <ClipboardCheck className="size-4" />,
+    },
+    {
+      quote: tr("ชอบที่เก็บ XP กับเหรียญทองได้ เหมือนเล่นเกมแต่ได้ความรู้จริงๆ"),
+      name: tr("น้องเฟิร์น"),
+      role: tr("นักเรียน ม.2"),
+      icon: <GraduationCap className="size-4" />,
+    },
+    {
+      quote: tr("จองห้องประชุมในไม่กี่คลิก ระบบอนุมัติชัดเจน ไม่ต้องเดินเอกสารอีกแล้ว"),
+      name: tr("คุณอนันต์"),
+      role: tr("ผู้ปกครอง / ผู้จอง"),
+      icon: <BookOpen className="size-4" />,
+    },
+    {
+      quote: tr("เห็นภาพรวมผู้ใช้ ห้อง และคำขอจองในหน้าเดียว ลดงานซ้ำซ้อนได้เยอะมาก"),
+      name: tr("ครูใหญ่สมชาย"),
+      role: tr("ผู้ดูแลระบบ"),
+      icon: <ShieldCheck className="size-4" />,
+    },
+    {
+      quote: tr("AI ช่วยสรุปบทเรียน แล้วนักเรียนถามต่อได้เอง ครูมีเวลาดูเด็กที่ต้องช่วยจริงๆ"),
+      name: tr("ครูณัฐ"),
+      role: tr("ครูวิทยาศาสตร์"),
+      icon: <ClipboardCheck className="size-4" />,
+    },
+    {
+      quote: tr("Leaderboard ทำให้เพื่อนๆ ในห้องช่วยกันเรียน ไม่ใช่แข่งกันอย่างเดียว"),
+      name: tr("น้องภูมิ"),
+      role: tr("นักเรียน ม.3"),
+      icon: <GraduationCap className="size-4" />,
+    },
+  ];
+}
 
 function TestimonialCard({ t }: { t: Testimonial }) {
   return (
