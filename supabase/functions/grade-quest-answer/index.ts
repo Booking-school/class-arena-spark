@@ -174,6 +174,37 @@ Deno.serve(async (req) => {
     ) as GradeResponse;
     const total = parsed.results.reduce((s, r) => s + (r.score ?? 0), 0);
     const max = parsed.results.reduce((s, r) => s + (r.max_score ?? 0), 0);
+
+    // Persist authoritative per-question results server-side using the service
+    // role. A DB trigger blocks clients from writing `result` directly, so this
+    // is the only trusted path that sets the score the reward functions read.
+    try {
+      const rows = parsed.results
+        .filter((r) => typeof r.idx === "number")
+        .map((r) => ({
+          user_id: user.id,
+          quest_id,
+          q_index: r.idx,
+          answer: answers[r.idx] ?? "",
+          result: r as unknown,
+        }));
+      if (rows.length > 0) {
+        await fetch(`${SUPABASE_URL}/rest/v1/daily_quest_question_progress`, {
+          method: "POST",
+          headers: {
+            apikey: SERVICE_KEY,
+            Authorization: `Bearer ${SERVICE_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "resolution=merge-duplicates,return=minimal",
+          },
+          body: JSON.stringify(rows),
+        });
+      }
+    } catch (_persistErr) {
+      // Non-fatal: client also upserts the answer, and finalize re-reads
+      // server progress. Avoid leaking internals to the client.
+    }
+
     return new Response(JSON.stringify({ ...parsed, total_score: total, max_score: max }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
