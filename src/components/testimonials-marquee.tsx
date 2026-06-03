@@ -68,6 +68,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
 }
 
 export function TestimonialsMarquee() {
+  const testimonials = getTestimonials();
   const row = [...testimonials, ...testimonials];
 
   return (
