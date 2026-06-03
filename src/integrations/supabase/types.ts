@@ -865,6 +865,63 @@ export type Database = {
           },
         ]
       }
+      mission_progress: {
+        Row: {
+          ai_xp_awarded: number
+          completed_at: string | null
+          id: string
+          item_id: string | null
+          mission_id: string
+          participation_xp_awarded: number
+          quality_xp_awarded: number
+          reviewed_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_xp_awarded?: number
+          completed_at?: string | null
+          id?: string
+          item_id?: string | null
+          mission_id: string
+          participation_xp_awarded?: number
+          quality_xp_awarded?: number
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_xp_awarded?: number
+          completed_at?: string | null
+          id?: string
+          item_id?: string | null
+          mission_id?: string
+          participation_xp_awarded?: number
+          quality_xp_awarded?: number
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_progress_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_mission_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_progress_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -978,6 +1035,67 @@ export type Database = {
           xp?: number
         }
         Relationships: []
+      }
+      quality_marks: {
+        Row: {
+          assignment_id: string | null
+          awarded_at: string
+          awarded_by: string
+          classroom_id: string
+          id: string
+          label: string
+          mark_type: string
+          mission_id: string | null
+          user_id: string
+          xp_bonus: number
+        }
+        Insert: {
+          assignment_id?: string | null
+          awarded_at?: string
+          awarded_by?: string
+          classroom_id: string
+          id?: string
+          label: string
+          mark_type: string
+          mission_id?: string | null
+          user_id: string
+          xp_bonus?: number
+        }
+        Update: {
+          assignment_id?: string | null
+          awarded_at?: string
+          awarded_by?: string
+          classroom_id?: string
+          id?: string
+          label?: string
+          mark_type?: string
+          mission_id?: string | null
+          user_id?: string
+          xp_bonus?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quality_marks_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_marks_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quality_marks_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_missions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quests: {
         Row: {
@@ -1416,6 +1534,56 @@ export type Database = {
         }
         Relationships: []
       }
+      term_bonus_rules: {
+        Row: {
+          bonus_points: number
+          classroom_id: string | null
+          created_at: string
+          created_by: string
+          criteria_json: Json
+          grade_level: string | null
+          id: string
+          is_active: boolean
+          name: string
+          rule_type: string
+          updated_at: string
+        }
+        Insert: {
+          bonus_points?: number
+          classroom_id?: string | null
+          created_at?: string
+          created_by?: string
+          criteria_json?: Json
+          grade_level?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          rule_type: string
+          updated_at?: string
+        }
+        Update: {
+          bonus_points?: number
+          classroom_id?: string | null
+          created_at?: string
+          created_by?: string
+          criteria_json?: Json
+          grade_level?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          rule_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "term_bonus_rules_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       titles: {
         Row: {
           code: string
@@ -1568,6 +1736,279 @@ export type Database = {
             columns: ["title_id"]
             isOneToOne: false
             referencedRelation: "titles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_mission_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          mission_id: string
+          required: boolean
+          sort_order: number
+          source_id: string | null
+          source_table: string | null
+          title: string
+          type: string
+          xp_max: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          mission_id: string
+          required?: boolean
+          sort_order?: number
+          source_id?: string | null
+          source_table?: string | null
+          title: string
+          type: string
+          xp_max?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          mission_id?: string
+          required?: boolean
+          sort_order?: number
+          source_id?: string | null
+          source_table?: string | null
+          title?: string
+          type?: string
+          xp_max?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_mission_items_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_mission_recaps: {
+        Row: {
+          ai_summary: string | null
+          audience: string
+          classroom_id: string
+          created_by: string
+          generated_at: string
+          id: string
+          mission_id: string
+          summary: Json
+          user_id: string | null
+        }
+        Insert: {
+          ai_summary?: string | null
+          audience?: string
+          classroom_id: string
+          created_by?: string
+          generated_at?: string
+          id?: string
+          mission_id: string
+          summary?: Json
+          user_id?: string | null
+        }
+        Update: {
+          ai_summary?: string | null
+          audience?: string
+          classroom_id?: string
+          created_by?: string
+          generated_at?: string
+          id?: string
+          mission_id?: string
+          summary?: Json
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_mission_recaps_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_mission_recaps_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_mission_team_members: {
+        Row: {
+          contribution_mark: number
+          helper_mark: boolean
+          id: string
+          joined_at: string
+          role_label: string | null
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          contribution_mark?: number
+          helper_mark?: boolean
+          id?: string
+          joined_at?: string
+          role_label?: string | null
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          contribution_mark?: number
+          helper_mark?: boolean
+          id?: string
+          joined_at?: string
+          role_label?: string | null
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_mission_team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_mission_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_mission_teams: {
+        Row: {
+          contribution_target: number
+          created_at: string
+          created_by: string
+          id: string
+          mission_id: string
+          name: string
+          team_goal: string | null
+        }
+        Insert: {
+          contribution_target?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          mission_id: string
+          name: string
+          team_goal?: string | null
+        }
+        Update: {
+          contribution_target?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          mission_id?: string
+          name?: string
+          team_goal?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_mission_teams_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_missions: {
+        Row: {
+          classroom_id: string
+          closed_at: string | null
+          created_at: string
+          created_by: string
+          flashcard_deck_id: string | null
+          id: string
+          main_assignment_id: string | null
+          participation_xp: number
+          practice_quest_id: string | null
+          published_at: string | null
+          quality_xp_max: number
+          status: string
+          team_mode: boolean
+          title: string
+          updated_at: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          classroom_id: string
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string
+          flashcard_deck_id?: string | null
+          id?: string
+          main_assignment_id?: string | null
+          participation_xp?: number
+          practice_quest_id?: string | null
+          published_at?: string | null
+          quality_xp_max?: number
+          status?: string
+          team_mode?: boolean
+          title: string
+          updated_at?: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          classroom_id?: string
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string
+          flashcard_deck_id?: string | null
+          id?: string
+          main_assignment_id?: string | null
+          participation_xp?: number
+          practice_quest_id?: string | null
+          published_at?: string | null
+          quality_xp_max?: number
+          status?: string
+          team_mode?: boolean
+          title?: string
+          updated_at?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_missions_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_missions_flashcard_deck_id_fkey"
+            columns: ["flashcard_deck_id"]
+            isOneToOne: false
+            referencedRelation: "flashcard_decks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_missions_main_assignment_id_fkey"
+            columns: ["main_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_missions_practice_quest_id_fkey"
+            columns: ["practice_quest_id"]
+            isOneToOne: false
+            referencedRelation: "daily_quests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_missions_practice_quest_id_fkey"
+            columns: ["practice_quest_id"]
+            isOneToOne: false
+            referencedRelation: "daily_quests_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -1770,6 +2211,18 @@ export type Database = {
       }
       is_teacher_of_user: {
         Args: { _teacher: string; _user: string }
+        Returns: boolean
+      }
+      is_weekly_mission_member: {
+        Args: { _mission_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_weekly_mission_owner: {
+        Args: { _mission_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_weekly_team_member: {
+        Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
       join_classroom_by_code: { Args: { _code: string }; Returns: string }
