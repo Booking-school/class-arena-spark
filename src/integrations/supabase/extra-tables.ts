@@ -90,8 +90,8 @@ type WeeklyMissionRecapRow = {
   classroom_id: string;
   user_id: string | null;
   audience: string;
-  summary: string | null;
-  ai_summary: string | null;
+  summary: Json | null;
+  ai_summary: Json | null;
   generated_at: Timestamp;
   created_by: string;
 };
