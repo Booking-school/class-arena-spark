@@ -325,6 +325,29 @@
   }
 }
 
+@keyframes scholar-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@layer utilities {
+  .marquee-track {
+    animation: scholar-marquee 40s linear infinite;
+    will-change: transform;
+  }
+
+  .group\/marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+}
+    background-position: -70% 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
