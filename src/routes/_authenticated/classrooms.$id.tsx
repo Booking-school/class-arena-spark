@@ -1148,6 +1148,7 @@ function AssignmentsTab({
           .createSignedUrl(path, 60 * 60 * 24 * 365);
         file_url = signed?.signedUrl ?? null;
       }
+      const isGroup = assignment.assignment_type === "group";
       const { error } = await supabase.from("submissions").upsert(
         {
           assignment_id: assignmentId,
@@ -1156,6 +1157,7 @@ function AssignmentsTab({
           file_url,
           is_late: isLate,
           submitted_at: new Date().toISOString(),
+          group_member_ids: isGroup && groupMemberIds.length > 0 ? groupMemberIds : null,
         },
         { onConflict: "assignment_id,user_id" },
       );
@@ -1166,7 +1168,9 @@ function AssignmentsTab({
       setSubmitFor(null);
       setSubContent("");
       setSubFile(null);
+      setGroupMemberIds([]);
       qc.invalidateQueries({ queryKey: ["mysubs"] });
+      qc.invalidateQueries({ queryKey: ["subs"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
