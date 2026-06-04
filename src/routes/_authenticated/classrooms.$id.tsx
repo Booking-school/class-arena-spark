@@ -1015,6 +1015,25 @@ function AssignmentsTab({
   const [groupMemberIds, setGroupMemberIds] = useState<string[]>([]);
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [uploadingAttachments, setUploadingAttachments] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    due_date: "",
+    max_score: 100,
+    xp_reward: 50,
+    assignment_type: "individual" as "individual" | "group",
+    status: "published" as "draft" | "published" | "closed",
+    late_penalty_percent: 0,
+    allow_late: true,
+    sample_video_url: "",
+  });
+  const [editExistingAttachments, setEditExistingAttachments] = useState<
+    { url: string; name?: string; type?: string }[]
+  >([]);
+  const [editNewAttachmentFiles, setEditNewAttachmentFiles] = useState<File[]>([]);
+  const [editUploading, setEditUploading] = useState(false);
+  
   
 
   // Classmates (excluding self) for group picker
@@ -1129,6 +1148,62 @@ function AssignmentsTab({
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const editAssignment = useMutation({
+    mutationFn: async () => {
+      if (!editingId) throw new Error(tr("ไม่พบงาน"));
+      if (!editForm.title.trim()) throw new Error(tr("ใส่ชื่องาน"));
+      if (editForm.late_penalty_percent < 0 || editForm.late_penalty_percent > 100)
+        throw new Error(tr("เปอร์เซ็นต์หักคะแนนต้องอยู่ระหว่าง 0-100"));
+
+      const attachments = [...editExistingAttachments];
+      if (editNewAttachmentFiles.length > 0) {
+        setEditUploading(true);
+        try {
+          for (const f of editNewAttachmentFiles) {
+            const path = `${user!.id}/assignments/${Date.now()}-${f.name}`;
+            const { error: ue } = await supabase.storage.from("uploads").upload(path, f);
+            if (ue) throw ue;
+            const { data: signed } = await supabase.storage
+              .from("uploads")
+              .createSignedUrl(path, 60 * 60 * 24 * 365);
+            if (signed?.signedUrl)
+              attachments.push({ url: signed.signedUrl, name: f.name, type: f.type });
+          }
+        } finally {
+          setEditUploading(false);
+        }
+      }
+
+      const { error } = await supabase
+        .from("assignments")
+        .update({
+          title: editForm.title.trim().slice(0, 200),
+          description: editForm.description ? editForm.description.slice(0, 5000) : null,
+          due_date: editForm.due_date || null,
+          max_score: editForm.max_score,
+          xp_reward: editForm.xp_reward,
+          assignment_type: editForm.assignment_type,
+          status: editForm.status,
+          late_penalty_percent: editForm.late_penalty_percent,
+          allow_late: editForm.allow_late,
+          sample_video_url: editForm.sample_video_url.trim() || null,
+          attachments,
+        })
+        .eq("id", editingId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(tr("บันทึกการแก้ไขแล้ว"));
+      setEditingId(null);
+      setEditNewAttachmentFiles([]);
+      setEditExistingAttachments([]);
+      qc.invalidateQueries({ queryKey: ["assignments", classroomId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
 
   const submit = useMutation({
     mutationFn: async (assignmentId: string) => {
@@ -1389,17 +1464,52 @@ function AssignmentsTab({
                       )}
                       <Badge variant="outline">เต็ม {a.max_score}</Badge>
                       {isOwner && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-destructive"
-                          onClick={() => {
-                            if (confirm(tr("ลบงานนี้?"))) removeAssignment.mutate(a.id);
-                          }}
-                        >
-                          <Trash2 className="size-3 mr-1" />
-                          {tr("ลบ")}
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7"
+                            onClick={() => {
+                              setEditingId(a.id);
+                              setEditForm({
+                                title: a.title ?? "",
+                                description: a.description ?? "",
+                                due_date: a.due_date
+                                  ? new Date(a.due_date).toISOString().slice(0, 16)
+                                  : "",
+                                max_score: a.max_score ?? 100,
+                                xp_reward: a.xp_reward ?? 50,
+                                assignment_type:
+                                  (a.assignment_type as "individual" | "group") ?? "individual",
+                                status:
+                                  (a.status as "draft" | "published" | "closed") ?? "published",
+                                late_penalty_percent: a.late_penalty_percent ?? 0,
+                                allow_late: a.allow_late ?? true,
+                                sample_video_url: a.sample_video_url ?? "",
+                              });
+                              setEditExistingAttachments(
+                                Array.isArray(a.attachments)
+                                  ? (a.attachments as { url: string; name?: string; type?: string }[])
+                                  : [],
+                              );
+                              setEditNewAttachmentFiles([]);
+                            }}
+                          >
+                            <Pencil className="size-3 mr-1" />
+                            {tr("แก้ไข")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-destructive"
+                            onClick={() => {
+                              if (confirm(tr("ลบงานนี้?"))) removeAssignment.mutate(a.id);
+                            }}
+                          >
+                            <Trash2 className="size-3 mr-1" />
+                            {tr("ลบ")}
+                          </Button>
+                        </>
                       )}
                     </div>
                   </CardTitle>
@@ -1580,8 +1690,206 @@ function AssignmentsTab({
             );
           })}
       </div>
+
+      <Dialog open={!!editingId} onOpenChange={(o) => !o && setEditingId(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{tr("แก้ไขงาน")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>{tr("ชื่องาน")}</Label>
+              <Input
+                value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>{tr("คำอธิบาย")}</Label>
+              <Textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>{tr("ประเภท")}</Label>
+                <select
+                  className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                  value={editForm.assignment_type}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      assignment_type: e.target.value as "individual" | "group",
+                    })
+                  }
+                >
+                  <option value="individual">{tr("งานเดี่ยว")}</option>
+                  <option value="group">{tr("งานกลุ่ม")}</option>
+                </select>
+              </div>
+              <div>
+                <Label>{tr("สถานะ")}</Label>
+                <select
+                  className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                  value={editForm.status}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      status: e.target.value as "draft" | "published" | "closed",
+                    })
+                  }
+                >
+                  <option value="draft">{tr("ร่าง")}</option>
+                  <option value="published">{tr("เผยแพร่")}</option>
+                  <option value="closed">{tr("ปิดรับ")}</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <Label>{tr("กำหนดส่ง")}</Label>
+              <Input
+                type="datetime-local"
+                value={editForm.due_date}
+                onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>{tr("คะแนนเต็ม")}</Label>
+                <Input
+                  type="number"
+                  value={editForm.max_score}
+                  onChange={(e) => setEditForm({ ...editForm, max_score: +e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>{tr("XP ตอบแทน")}</Label>
+                <Input
+                  type="number"
+                  value={editForm.xp_reward}
+                  onChange={(e) => setEditForm({ ...editForm, xp_reward: +e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>{tr("หักคะแนนส่งช้า (%)")}</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={editForm.late_penalty_percent}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, late_penalty_percent: +e.target.value })
+                  }
+                />
+              </div>
+              <div className="flex items-end gap-2">
+                <input
+                  id="edit-allow-late"
+                  type="checkbox"
+                  checked={editForm.allow_late}
+                  onChange={(e) => setEditForm({ ...editForm, allow_late: e.target.checked })}
+                  className="size-4"
+                />
+                <Label htmlFor="edit-allow-late" className="cursor-pointer">
+                  {tr("อนุญาตส่งช้า")}
+                </Label>
+              </div>
+            </div>
+            <div>
+              <Label>{tr("ลิงก์วิดีโอตัวอย่าง")}</Label>
+              <Input
+                placeholder="https://..."
+                value={editForm.sample_video_url}
+                onChange={(e) => setEditForm({ ...editForm, sample_video_url: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>{tr("ไฟล์แนบเดิม")}</Label>
+              {editExistingAttachments.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {editExistingAttachments.map((f, i) => (
+                    <div key={i} className="relative rounded-md border bg-muted/40 p-1">
+                      <img
+                        src={f.url}
+                        alt={f.name ?? `att-${i}`}
+                        className="h-20 w-20 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditExistingAttachments((prev) => prev.filter((_, idx) => idx !== i))
+                        }
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full size-5 grid place-items-center text-xs"
+                        aria-label={tr("ลบ")}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1">{tr("ไม่มีไฟล์แนบ")}</p>
+              )}
+            </div>
+            <div>
+              <Label>{tr("เพิ่มรูปใหม่ (เลือกได้หลายรูป)")}</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => {
+                  const files = e.target.files ? Array.from(e.target.files) : [];
+                  setEditNewAttachmentFiles((prev) => [...prev, ...files]);
+                  e.target.value = "";
+                }}
+              />
+              {editNewAttachmentFiles.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {editNewAttachmentFiles.map((f, i) => (
+                    <div key={i} className="relative rounded-md border bg-muted/40 p-1">
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt={f.name}
+                        className="h-20 w-20 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditNewAttachmentFiles((prev) => prev.filter((_, idx) => idx !== i))
+                        }
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full size-5 grid place-items-center text-xs"
+                        aria-label={tr("ลบ")}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingId(null)}>
+              {tr("ยกเลิก")}
+            </Button>
+            <Button
+              onClick={() => editAssignment.mutate()}
+              disabled={editAssignment.isPending || editUploading}
+            >
+              {(editAssignment.isPending || editUploading) && (
+                <Loader2 className="size-4 animate-spin mr-1" />
+              )}
+              {editUploading ? tr("กำลังอัปโหลด") : tr("บันทึก")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+
 }
 
 function SubmissionsList({
