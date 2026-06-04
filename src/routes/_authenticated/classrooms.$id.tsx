@@ -2554,8 +2554,8 @@ function DailyQuestsTab({ classroomId, isOwner }: { classroomId: string; isOwner
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <h3 className="font-display text-lg">{preview.title}</h3>
                   <div className="flex gap-2 flex-wrap">
-                    <Badge variant="outline">Lv.{preview.min_level}+</Badge>
                     <Badge variant="outline" className="capitalize">
+
                       {preview.difficulty}
                     </Badge>
                     <Badge variant="outline">{preview.max_xp_reward} XP</Badge>
