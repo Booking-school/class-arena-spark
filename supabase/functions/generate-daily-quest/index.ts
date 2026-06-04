@@ -26,13 +26,12 @@ Deno.serve(async (req) => {
     }
 
     // Role gate: only teachers/admins may invoke AI quest generation
-    const { data: roleRow } = await supa
+    const { data: roleRows } = await supa
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
-      .in("role", ["teacher", "admin"])
-      .maybeSingle();
-    if (!roleRow) {
+      .in("role", ["teacher", "admin"]);
+    if (!roleRows || roleRows.length === 0) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...cors, "Content-Type": "application/json" },
