@@ -1690,8 +1690,206 @@ function AssignmentsTab({
             );
           })}
       </div>
+
+      <Dialog open={!!editingId} onOpenChange={(o) => !o && setEditingId(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{tr("แก้ไขงาน")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>{tr("ชื่องาน")}</Label>
+              <Input
+                value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>{tr("คำอธิบาย")}</Label>
+              <Textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>{tr("ประเภท")}</Label>
+                <select
+                  className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                  value={editForm.assignment_type}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      assignment_type: e.target.value as "individual" | "group",
+                    })
+                  }
+                >
+                  <option value="individual">{tr("งานเดี่ยว")}</option>
+                  <option value="group">{tr("งานกลุ่ม")}</option>
+                </select>
+              </div>
+              <div>
+                <Label>{tr("สถานะ")}</Label>
+                <select
+                  className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                  value={editForm.status}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      status: e.target.value as "draft" | "published" | "closed",
+                    })
+                  }
+                >
+                  <option value="draft">{tr("ร่าง")}</option>
+                  <option value="published">{tr("เผยแพร่")}</option>
+                  <option value="closed">{tr("ปิดรับ")}</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <Label>{tr("กำหนดส่ง")}</Label>
+              <Input
+                type="datetime-local"
+                value={editForm.due_date}
+                onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>{tr("คะแนนเต็ม")}</Label>
+                <Input
+                  type="number"
+                  value={editForm.max_score}
+                  onChange={(e) => setEditForm({ ...editForm, max_score: +e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>{tr("XP ตอบแทน")}</Label>
+                <Input
+                  type="number"
+                  value={editForm.xp_reward}
+                  onChange={(e) => setEditForm({ ...editForm, xp_reward: +e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>{tr("หักคะแนนส่งช้า (%)")}</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={editForm.late_penalty_percent}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, late_penalty_percent: +e.target.value })
+                  }
+                />
+              </div>
+              <div className="flex items-end gap-2">
+                <input
+                  id="edit-allow-late"
+                  type="checkbox"
+                  checked={editForm.allow_late}
+                  onChange={(e) => setEditForm({ ...editForm, allow_late: e.target.checked })}
+                  className="size-4"
+                />
+                <Label htmlFor="edit-allow-late" className="cursor-pointer">
+                  {tr("อนุญาตส่งช้า")}
+                </Label>
+              </div>
+            </div>
+            <div>
+              <Label>{tr("ลิงก์วิดีโอตัวอย่าง")}</Label>
+              <Input
+                placeholder="https://..."
+                value={editForm.sample_video_url}
+                onChange={(e) => setEditForm({ ...editForm, sample_video_url: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>{tr("ไฟล์แนบเดิม")}</Label>
+              {editExistingAttachments.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {editExistingAttachments.map((f, i) => (
+                    <div key={i} className="relative rounded-md border bg-muted/40 p-1">
+                      <img
+                        src={f.url}
+                        alt={f.name ?? `att-${i}`}
+                        className="h-20 w-20 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditExistingAttachments((prev) => prev.filter((_, idx) => idx !== i))
+                        }
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full size-5 grid place-items-center text-xs"
+                        aria-label={tr("ลบ")}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1">{tr("ไม่มีไฟล์แนบ")}</p>
+              )}
+            </div>
+            <div>
+              <Label>{tr("เพิ่มรูปใหม่ (เลือกได้หลายรูป)")}</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => {
+                  const files = e.target.files ? Array.from(e.target.files) : [];
+                  setEditNewAttachmentFiles((prev) => [...prev, ...files]);
+                  e.target.value = "";
+                }}
+              />
+              {editNewAttachmentFiles.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {editNewAttachmentFiles.map((f, i) => (
+                    <div key={i} className="relative rounded-md border bg-muted/40 p-1">
+                      <img
+                        src={URL.createObjectURL(f)}
+                        alt={f.name}
+                        className="h-20 w-20 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditNewAttachmentFiles((prev) => prev.filter((_, idx) => idx !== i))
+                        }
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full size-5 grid place-items-center text-xs"
+                        aria-label={tr("ลบ")}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingId(null)}>
+              {tr("ยกเลิก")}
+            </Button>
+            <Button
+              onClick={() => editAssignment.mutate()}
+              disabled={editAssignment.isPending || editUploading}
+            >
+              {(editAssignment.isPending || editUploading) && (
+                <Loader2 className="size-4 animate-spin mr-1" />
+              )}
+              {editUploading ? tr("กำลังอัปโหลด") : tr("บันทึก")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+
 }
 
 function SubmissionsList({
