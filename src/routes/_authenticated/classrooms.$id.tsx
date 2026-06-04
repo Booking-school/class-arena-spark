@@ -1012,8 +1012,30 @@ function AssignmentsTab({
   const [submitFor, setSubmitFor] = useState<string | null>(null);
   const [subContent, setSubContent] = useState("");
   const [subFile, setSubFile] = useState<File | null>(null);
+  const [groupMemberIds, setGroupMemberIds] = useState<string[]>([]);
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [uploadingAttachments, setUploadingAttachments] = useState(false);
+  const [viewStudentId, setViewStudentId] = useState<string | null>(null);
+
+  // Classmates (excluding self) for group picker
+  const { data: classmates } = useQuery({
+    queryKey: ["classmates", classroomId, user?.id],
+    queryFn: async () => {
+      const { data: cm, error } = await supabase
+        .from("classroom_members")
+        .select("user_id")
+        .eq("classroom_id", classroomId);
+      if (error) throw error;
+      const ids = (cm ?? []).map((m) => m.user_id).filter((id) => id !== user?.id);
+      if (ids.length === 0) return [] as ClassroomMemberProfile[];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .in("id", ids);
+      return (profs ?? []) as ClassroomMemberProfile[];
+    },
+    enabled: !!user,
+  });
 
   const { data: assignments } = useQuery({
     queryKey: ["assignments", classroomId],
