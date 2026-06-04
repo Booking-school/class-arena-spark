@@ -1585,10 +1585,12 @@ function AssignmentsTab({
 
 function SubmissionsList({
   assignmentId,
+  classroomId,
   maxScore,
   xpReward,
 }: {
   assignmentId: string;
+  classroomId: string;
   maxScore: number;
   xpReward: number;
 }) {
