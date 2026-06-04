@@ -94,6 +94,12 @@ async function createOne(
         email_confirm: true,
       });
       if (updErr) throw new Error(updErr.message);
+      await supabaseAdmin
+        .from("student_passwords")
+        .upsert(
+          { user_id: existingId, password: input.password, updated_at: new Date().toISOString() },
+          { onConflict: "user_id" },
+        );
       return { userId: existingId, reset: true };
     }
     throw new Error(error.message || "สร้างบัญชีไม่สำเร็จ");
