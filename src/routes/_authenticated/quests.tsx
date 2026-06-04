@@ -192,8 +192,8 @@ function QuestsPage() {
   const sortedQuests = [...visibleQuests].sort((a, b) => {
     const aAtt = attemptList.find((x) => x.quest_id === a.id);
     const bAtt = attemptList.find((x) => x.quest_id === b.id);
-    const aLocked = lvl < (a.min_level ?? 1);
-    const bLocked = lvl < (b.min_level ?? 1);
+    const aLocked = false;
+    const bLocked = false;
     if (aLocked !== bLocked) return aLocked ? 1 : -1;
     if (!!aAtt !== !!bAtt) return aAtt ? 1 : -1;
     return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
@@ -222,7 +222,7 @@ function QuestsPage() {
         )}
         {sortedQuests?.map((q) => {
           const att = attemptList.find((a) => a.quest_id === q.id);
-          const locked = lvl < (q.min_level ?? 1);
+          const locked = false;
           const qWithClass = {
             ...q,
             classrooms: q.classroom_id ? { name: classMap[q.classroom_id] } : null,

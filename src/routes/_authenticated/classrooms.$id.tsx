@@ -2554,8 +2554,8 @@ function DailyQuestsTab({ classroomId, isOwner }: { classroomId: string; isOwner
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <h3 className="font-display text-lg">{preview.title}</h3>
                   <div className="flex gap-2 flex-wrap">
-                    <Badge variant="outline">Lv.{preview.min_level}+</Badge>
                     <Badge variant="outline" className="capitalize">
+
                       {preview.difficulty}
                     </Badge>
                     <Badge variant="outline">{preview.max_xp_reward} XP</Badge>
@@ -2600,7 +2600,7 @@ function DailyQuestsTab({ classroomId, isOwner }: { classroomId: string; isOwner
         )}
         {quests?.map((q) => {
           const att = attempts?.find((a) => a.quest_id === q.id);
-          const locked = (profile?.level ?? 1) < (q.min_level ?? 1);
+          const locked = false;
           if (isOwner) {
             return (
               <div key={q.id ?? q.title ?? q.topic ?? "daily-quest"} className="relative">

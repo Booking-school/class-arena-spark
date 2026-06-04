@@ -61,7 +61,6 @@ Deno.serve(async (req) => {
 - ระดับความยากของแต่ละข้อ ต้องไล่ระดับ: ข้อ 1 ง่ายมาก, ข้อ 2 ง่าย, ข้อ 3 ปานกลาง, ข้อ 4 ยาก, ข้อ 5 ยากมาก
 - ตั้งชื่อ Quest ให้น่าสนใจและสื่อถึงเนื้อหา
 - กำหนด difficulty รวม (easy/normal/hard) ตามภาพรวมของเนื้อหา
-- กำหนด min_level (เลเวลนักเรียนขั้นต่ำที่ควรปลดล็อก: 1-20 ตามความยากของหัวข้อ)
 - กำหนด max_xp_reward (50-300 ตามความยาก) และ max_gold_reward (15-100)
 - แต่ละข้อมี expected_answer ที่ชัดเจน, keywords สำหรับตรวจ, และ points (รวมต้องเท่ากับ 100, ข้อยากขึ้นได้คะแนนมากขึ้น)`;
 
@@ -88,10 +87,6 @@ Deno.serve(async (req) => {
                 properties: {
                   title: { type: "string" },
                   difficulty: { type: "string", enum: ["easy", "normal", "hard"] },
-                  min_level: {
-                    type: "number",
-                    description: "Minimum student level to unlock (1-20)",
-                  },
                   max_xp_reward: {
                     type: "number",
                     description: "Max XP awarded for perfect score (50-300)",
@@ -130,7 +125,6 @@ Deno.serve(async (req) => {
                 required: [
                   "title",
                   "difficulty",
-                  "min_level",
                   "max_xp_reward",
                   "max_gold_reward",
                   "questions",
