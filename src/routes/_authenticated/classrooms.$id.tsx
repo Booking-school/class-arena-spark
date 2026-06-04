@@ -1452,9 +1452,21 @@ function AssignmentsTab({
                       {mine ? (
                         <div className="text-sm space-y-1">
                           <div className="flex gap-1 flex-wrap">
-                            <Badge className="bg-green-100 text-green-900">{tr("ส่งแล้ว")}</Badge>
+                            <Badge className="bg-green-100 text-green-900">
+                              {mine.user_id === user?.id ? tr("ส่งแล้ว") : tr("ส่งโดยกลุ่ม")}
+                            </Badge>
                             {mine.is_late && <Badge variant="destructive">{tr("ส่งช้า")}</Badge>}
                           </div>
+                          {mine.user_id !== user?.id && (
+                            <GroupSubmittedBy submitterId={mine.user_id} />
+                          )}
+                          {Array.isArray(mine.group_member_ids) &&
+                            mine.group_member_ids.length > 0 &&
+                            mine.user_id === user?.id && (
+                              <p className="text-xs text-muted-foreground">
+                                {tr("สมาชิกกลุ่ม:")} {mine.group_member_ids.length} {tr("คน")}
+                              </p>
+                            )}
                           {mine.score != null && (
                             <p>
                               {tr("คะแนน:")}
@@ -1475,6 +1487,49 @@ function AssignmentsTab({
                         </p>
                       ) : submitFor === a.id ? (
                         <div className="space-y-2">
+                          {a.assignment_type === "group" && (
+                            <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+                              <Label className="text-xs font-medium">
+                                {tr("เลือกสมาชิกในกลุ่ม (เพื่อนที่จะนับว่าส่งงานร่วมกับคุณ)")}
+                              </Label>
+                              {classmates && classmates.length > 0 ? (
+                                <div className="grid gap-1 max-h-40 overflow-y-auto sm:grid-cols-2">
+                                  {classmates.map((c) => (
+                                    <label
+                                      key={c.id}
+                                      className="flex items-center gap-2 text-sm cursor-pointer hover:bg-background/60 px-2 py-1 rounded"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        className="size-4"
+                                        checked={groupMemberIds.includes(c.id)}
+                                        onChange={(e) => {
+                                          setGroupMemberIds((prev) =>
+                                            e.target.checked
+                                              ? [...prev, c.id]
+                                              : prev.filter((id) => id !== c.id),
+                                          );
+                                        }}
+                                      />
+                                      <span className="truncate">
+                                        {c.display_name ?? "Anonymous"}
+                                      </span>
+                                    </label>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted-foreground">
+                                  {tr("ยังไม่มีเพื่อนในห้องนี้")}
+                                </p>
+                              )}
+                              {groupMemberIds.length > 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                  {tr("เลือกแล้ว")} {groupMemberIds.length} {tr("คน")} •{" "}
+                                  {tr("เพื่อนเหล่านี้จะไม่ต้องส่งงานนี้อีก")}
+                                </p>
+                              )}
+                            </div>
+                          )}
                           <Textarea
                             placeholder={tr("ข้อความ/คำตอบ")}
                             value={subContent}
@@ -1493,13 +1548,26 @@ function AssignmentsTab({
                               <Upload className="size-4 mr-1" />
                               {tr("ส่ง")}
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => setSubmitFor(null)}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSubmitFor(null);
+                                setGroupMemberIds([]);
+                              }}
+                            >
                               {tr("ยกเลิก")}
                             </Button>
                           </div>
                         </div>
                       ) : (
-                        <Button size="sm" onClick={() => setSubmitFor(a.id)}>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSubmitFor(a.id);
+                            setGroupMemberIds([]);
+                          }}
+                        >
                           {isOverdue ? tr("ส่งงาน (ช้า)") : tr("ส่งงาน")}
                         </Button>
                       )}
