@@ -1444,6 +1444,7 @@ function AssignmentsTab({
                   {isOwner ? (
                     <SubmissionsList
                       assignmentId={a.id}
+                      classroomId={classroomId}
                       maxScore={a.max_score}
                       xpReward={a.xp_reward}
                     />
