@@ -1464,17 +1464,52 @@ function AssignmentsTab({
                       )}
                       <Badge variant="outline">เต็ม {a.max_score}</Badge>
                       {isOwner && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-destructive"
-                          onClick={() => {
-                            if (confirm(tr("ลบงานนี้?"))) removeAssignment.mutate(a.id);
-                          }}
-                        >
-                          <Trash2 className="size-3 mr-1" />
-                          {tr("ลบ")}
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7"
+                            onClick={() => {
+                              setEditingId(a.id);
+                              setEditForm({
+                                title: a.title ?? "",
+                                description: a.description ?? "",
+                                due_date: a.due_date
+                                  ? new Date(a.due_date).toISOString().slice(0, 16)
+                                  : "",
+                                max_score: a.max_score ?? 100,
+                                xp_reward: a.xp_reward ?? 50,
+                                assignment_type:
+                                  (a.assignment_type as "individual" | "group") ?? "individual",
+                                status:
+                                  (a.status as "draft" | "published" | "closed") ?? "published",
+                                late_penalty_percent: a.late_penalty_percent ?? 0,
+                                allow_late: a.allow_late ?? true,
+                                sample_video_url: a.sample_video_url ?? "",
+                              });
+                              setEditExistingAttachments(
+                                Array.isArray(a.attachments)
+                                  ? (a.attachments as { url: string; name?: string; type?: string }[])
+                                  : [],
+                              );
+                              setEditNewAttachmentFiles([]);
+                            }}
+                          >
+                            <Pencil className="size-3 mr-1" />
+                            {tr("แก้ไข")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-destructive"
+                            onClick={() => {
+                              if (confirm(tr("ลบงานนี้?"))) removeAssignment.mutate(a.id);
+                            }}
+                          >
+                            <Trash2 className="size-3 mr-1" />
+                            {tr("ลบ")}
+                          </Button>
+                        </>
                       )}
                     </div>
                   </CardTitle>
