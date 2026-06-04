@@ -1012,8 +1012,30 @@ function AssignmentsTab({
   const [submitFor, setSubmitFor] = useState<string | null>(null);
   const [subContent, setSubContent] = useState("");
   const [subFile, setSubFile] = useState<File | null>(null);
+  const [groupMemberIds, setGroupMemberIds] = useState<string[]>([]);
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [uploadingAttachments, setUploadingAttachments] = useState(false);
+  
+
+  // Classmates (excluding self) for group picker
+  const { data: classmates } = useQuery({
+    queryKey: ["classmates", classroomId, user?.id],
+    queryFn: async () => {
+      const { data: cm, error } = await supabase
+        .from("classroom_members")
+        .select("user_id")
+        .eq("classroom_id", classroomId);
+      if (error) throw error;
+      const ids = (cm ?? []).map((m) => m.user_id).filter((id) => id !== user?.id);
+      if (ids.length === 0) return [] as ClassroomMemberProfile[];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .in("id", ids);
+      return (profs ?? []) as ClassroomMemberProfile[];
+    },
+    enabled: !!user,
+  });
 
   const { data: assignments } = useQuery({
     queryKey: ["assignments", classroomId],
@@ -1033,11 +1055,12 @@ function AssignmentsTab({
     queryFn: async () => {
       const ids = assignments?.map((a) => a.id) ?? [];
       if (ids.length === 0) return [];
+      // Include both: submissions I own AND submissions where I'm listed as a group member
       const { data, error } = await supabase
         .from("submissions")
         .select("*")
         .in("assignment_id", ids)
-        .eq("user_id", user!.id);
+        .or(`user_id.eq.${user!.id},group_member_ids.cs.{${user!.id}}`);
       if (error) throw error;
       return data;
     },
@@ -1125,6 +1148,7 @@ function AssignmentsTab({
           .createSignedUrl(path, 60 * 60 * 24 * 365);
         file_url = signed?.signedUrl ?? null;
       }
+      const isGroup = assignment.assignment_type === "group";
       const { error } = await supabase.from("submissions").upsert(
         {
           assignment_id: assignmentId,
@@ -1133,6 +1157,7 @@ function AssignmentsTab({
           file_url,
           is_late: isLate,
           submitted_at: new Date().toISOString(),
+          group_member_ids: isGroup && groupMemberIds.length > 0 ? groupMemberIds : null,
         },
         { onConflict: "assignment_id,user_id" },
       );
@@ -1143,7 +1168,9 @@ function AssignmentsTab({
       setSubmitFor(null);
       setSubContent("");
       setSubFile(null);
+      setGroupMemberIds([]);
       qc.invalidateQueries({ queryKey: ["mysubs"] });
+      qc.invalidateQueries({ queryKey: ["subs"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -1417,6 +1444,7 @@ function AssignmentsTab({
                   {isOwner ? (
                     <SubmissionsList
                       assignmentId={a.id}
+                      classroomId={classroomId}
                       maxScore={a.max_score}
                       xpReward={a.xp_reward}
                     />
@@ -1425,9 +1453,21 @@ function AssignmentsTab({
                       {mine ? (
                         <div className="text-sm space-y-1">
                           <div className="flex gap-1 flex-wrap">
-                            <Badge className="bg-green-100 text-green-900">{tr("ส่งแล้ว")}</Badge>
+                            <Badge className="bg-green-100 text-green-900">
+                              {mine.user_id === user?.id ? tr("ส่งแล้ว") : tr("ส่งโดยกลุ่ม")}
+                            </Badge>
                             {mine.is_late && <Badge variant="destructive">{tr("ส่งช้า")}</Badge>}
                           </div>
+                          {mine.user_id !== user?.id && (
+                            <GroupSubmittedBy submitterId={mine.user_id} />
+                          )}
+                          {Array.isArray(mine.group_member_ids) &&
+                            mine.group_member_ids.length > 0 &&
+                            mine.user_id === user?.id && (
+                              <p className="text-xs text-muted-foreground">
+                                {tr("สมาชิกกลุ่ม:")} {mine.group_member_ids.length} {tr("คน")}
+                              </p>
+                            )}
                           {mine.score != null && (
                             <p>
                               {tr("คะแนน:")}
@@ -1448,6 +1488,49 @@ function AssignmentsTab({
                         </p>
                       ) : submitFor === a.id ? (
                         <div className="space-y-2">
+                          {a.assignment_type === "group" && (
+                            <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+                              <Label className="text-xs font-medium">
+                                {tr("เลือกสมาชิกในกลุ่ม (เพื่อนที่จะนับว่าส่งงานร่วมกับคุณ)")}
+                              </Label>
+                              {classmates && classmates.length > 0 ? (
+                                <div className="grid gap-1 max-h-40 overflow-y-auto sm:grid-cols-2">
+                                  {classmates.map((c) => (
+                                    <label
+                                      key={c.id}
+                                      className="flex items-center gap-2 text-sm cursor-pointer hover:bg-background/60 px-2 py-1 rounded"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        className="size-4"
+                                        checked={groupMemberIds.includes(c.id)}
+                                        onChange={(e) => {
+                                          setGroupMemberIds((prev) =>
+                                            e.target.checked
+                                              ? [...prev, c.id]
+                                              : prev.filter((id) => id !== c.id),
+                                          );
+                                        }}
+                                      />
+                                      <span className="truncate">
+                                        {c.display_name ?? "Anonymous"}
+                                      </span>
+                                    </label>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted-foreground">
+                                  {tr("ยังไม่มีเพื่อนในห้องนี้")}
+                                </p>
+                              )}
+                              {groupMemberIds.length > 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                  {tr("เลือกแล้ว")} {groupMemberIds.length} {tr("คน")} •{" "}
+                                  {tr("เพื่อนเหล่านี้จะไม่ต้องส่งงานนี้อีก")}
+                                </p>
+                              )}
+                            </div>
+                          )}
                           <Textarea
                             placeholder={tr("ข้อความ/คำตอบ")}
                             value={subContent}
@@ -1466,13 +1549,26 @@ function AssignmentsTab({
                               <Upload className="size-4 mr-1" />
                               {tr("ส่ง")}
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => setSubmitFor(null)}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSubmitFor(null);
+                                setGroupMemberIds([]);
+                              }}
+                            >
                               {tr("ยกเลิก")}
                             </Button>
                           </div>
                         </div>
                       ) : (
-                        <Button size="sm" onClick={() => setSubmitFor(a.id)}>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSubmitFor(a.id);
+                            setGroupMemberIds([]);
+                          }}
+                        >
                           {isOverdue ? tr("ส่งงาน (ช้า)") : tr("ส่งงาน")}
                         </Button>
                       )}
@@ -1490,10 +1586,12 @@ function AssignmentsTab({
 
 function SubmissionsList({
   assignmentId,
+  classroomId,
   maxScore,
   xpReward,
 }: {
   assignmentId: string;
+  classroomId: string;
   maxScore: number;
   xpReward: number;
 }) {
@@ -1552,6 +1650,7 @@ function SubmissionsList({
         <GradeRow
           key={s.id}
           sub={s}
+          classroomId={classroomId}
           maxScore={maxScore}
           onGrade={(score, feedback) =>
             grade.mutate({ id: s.id, score, feedback, userId: s.user_id })
@@ -1564,21 +1663,41 @@ function SubmissionsList({
 
 function GradeRow({
   sub,
+  classroomId,
   maxScore,
   onGrade,
 }: {
   sub: SubmissionRow;
+  classroomId: string;
   maxScore: number;
   onGrade: (score: number, fb: string) => void;
 }) {
   const [score, setScore] = useState(sub.score ?? 0);
   const [fb, setFb] = useState(sub.feedback ?? "");
+  const [openStudent, setOpenStudent] = useState<string | null>(null);
+  const groupIds = Array.isArray(sub.group_member_ids) ? (sub.group_member_ids as string[]) : [];
   return (
     <Card className="bg-muted/30">
       <CardContent className="pt-4 space-y-2">
         <p className="text-xs text-muted-foreground">
-          นักเรียน: {sub.profiles?.display_name ?? sub.user_id.slice(0, 8)}
+          {tr("นักเรียน:")}{" "}
+          <button
+            type="button"
+            onClick={() => setOpenStudent(sub.user_id)}
+            className="text-primary underline-offset-2 hover:underline font-medium"
+          >
+            {sub.profiles?.display_name ?? sub.user_id.slice(0, 8)}
+          </button>
         </p>
+        {groupIds.length > 0 && (
+          <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
+            <span>{tr("ร่วมกับ:")}</span>
+            <GroupMembersInline
+              ids={groupIds}
+              onClick={(id) => setOpenStudent(id)}
+            />
+          </div>
+        )}
         {sub.content && (
           <p className="text-sm whitespace-pre-wrap leading-relaxed">{sub.content}</p>
         )}
@@ -1609,7 +1728,202 @@ function GradeRow({
           </Button>
         </div>
       </CardContent>
+      {openStudent && (
+        <StudentSubmissionsDialog
+          studentId={openStudent}
+          classroomId={classroomId}
+          maxScore={maxScore}
+          onClose={() => setOpenStudent(null)}
+        />
+      )}
     </Card>
+  );
+}
+
+function GroupSubmittedBy({ submitterId }: { submitterId: string }) {
+  const { data } = useQuery({
+    queryKey: ["profile-name", submitterId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", submitterId)
+        .maybeSingle();
+      return data?.display_name ?? submitterId.slice(0, 8);
+    },
+  });
+  return (
+    <p className="text-xs text-muted-foreground">
+      {tr("ส่งโดย:")} {data ?? "…"}
+    </p>
+  );
+}
+
+function GroupMembersInline({
+  ids,
+  onClick,
+}: {
+  ids: string[];
+  onClick?: (id: string) => void;
+}) {
+  const { data } = useQuery({
+    queryKey: ["profiles-names", ids.join(",")],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", ids);
+      return (data ?? []) as { id: string; display_name: string | null }[];
+    },
+    enabled: ids.length > 0,
+  });
+  const map = new Map((data ?? []).map((p) => [p.id, p.display_name]));
+  return (
+    <>
+      {ids.map((id, i) => (
+        <span key={id}>
+          {onClick ? (
+            <button
+              type="button"
+              onClick={() => onClick(id)}
+              className="text-primary underline-offset-2 hover:underline"
+            >
+              {map.get(id) ?? id.slice(0, 8)}
+            </button>
+          ) : (
+            <span>{map.get(id) ?? id.slice(0, 8)}</span>
+          )}
+          {i < ids.length - 1 && <span>, </span>}
+        </span>
+      ))}
+    </>
+  );
+}
+
+function StudentSubmissionsDialog({
+  studentId,
+  classroomId,
+  maxScore: _maxScore,
+  onClose,
+}: {
+  studentId: string;
+  classroomId: string;
+  maxScore: number;
+  onClose: () => void;
+}) {
+  const { data: profile } = useQuery({
+    queryKey: ["profile-name", studentId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("id", studentId)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["student-submissions", classroomId, studentId],
+    queryFn: async () => {
+      const { data: assigns, error: ae } = await supabase
+        .from("assignments")
+        .select("id, title, max_score, due_date, created_at")
+        .eq("classroom_id", classroomId)
+        .order("created_at", { ascending: false });
+      if (ae) throw ae;
+      const ids = (assigns ?? []).map((a) => a.id);
+      if (ids.length === 0) return [];
+      const { data: subs } = await supabase
+        .from("submissions")
+        .select("*")
+        .in("assignment_id", ids)
+        .or(`user_id.eq.${studentId},group_member_ids.cs.{${studentId}}`);
+      const subMap = new Map((subs ?? []).map((s) => [s.assignment_id, s]));
+      return (assigns ?? []).map((a) => ({
+        assignment: a,
+        submission: subMap.get(a.id) ?? null,
+      }));
+    },
+  });
+
+  return (
+    <Dialog open onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {tr("งานทั้งหมดของ")} {profile?.display_name ?? studentId.slice(0, 8)}
+          </DialogTitle>
+        </DialogHeader>
+        {isLoading && <p className="text-sm text-muted-foreground">{tr("กำลังโหลด…")}</p>}
+        {rows?.length === 0 && (
+          <p className="text-sm text-muted-foreground">{tr("ห้องนี้ยังไม่มีงาน")}</p>
+        )}
+        <div className="space-y-3">
+          {rows?.map(({ assignment, submission }) => (
+            <Card key={assignment.id} className="bg-muted/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center justify-between gap-2 flex-wrap">
+                  <span>{assignment.title}</span>
+                  {submission ? (
+                    submission.user_id === studentId ? (
+                      <Badge className="bg-green-100 text-green-900">{tr("ส่งแล้ว")}</Badge>
+                    ) : (
+                      <Badge variant="secondary">{tr("ส่งโดยกลุ่ม")}</Badge>
+                    )
+                  ) : (
+                    <Badge variant="destructive">{tr("ยังไม่ส่ง")}</Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {submission ? (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      {tr("ส่งเมื่อ")}:{" "}
+                      {submission.submitted_at
+                        ? new Date(submission.submitted_at).toLocaleString("th-TH")
+                        : "—"}
+                      {submission.is_late && (
+                        <Badge variant="destructive" className="ml-2">
+                          {tr("ส่งช้า")}
+                        </Badge>
+                      )}
+                    </p>
+                    {submission.content && (
+                      <p className="whitespace-pre-wrap leading-relaxed">{submission.content}</p>
+                    )}
+                    {submission.file_url && (
+                      <MediaPreview
+                        url={submission.file_url}
+                        alt={tr("ไฟล์แนบ")}
+                        fallbackLabel={tr("ไฟล์แนบ")}
+                        thumbClassName="h-24 w-auto max-w-[160px]"
+                      />
+                    )}
+                    {submission.score != null && (
+                      <p>
+                        {tr("คะแนน:")}{" "}
+                        <span className="font-semibold">
+                          {submission.score}/{assignment.max_score}
+                        </span>
+                      </p>
+                    )}
+                    {submission.feedback && (
+                      <p className="text-muted-foreground">
+                        {tr("ความคิดเห็น:")} {submission.feedback}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">{tr("นักเรียนยังไม่ได้ส่งงานนี้")}</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
