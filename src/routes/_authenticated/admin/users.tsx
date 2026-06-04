@@ -92,6 +92,16 @@ function AdminUsers() {
     onSuccess: (_d, vars) => {
       toast.success(tr("รีเซ็ตรหัสผ่านแล้ว"));
       setPwInputs((s) => ({ ...s, [vars.userId]: "" }));
+      qc.invalidateQueries({ queryKey: ["admin-student-passwords"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const resetDefault = useMutation({
+    mutationFn: (userId: string) => resetDefaultFn({ data: { userId } }),
+    onSuccess: () => {
+      toast.success(tr("รีเซ็ตเป็น 123456 แล้ว"));
+      qc.invalidateQueries({ queryKey: ["admin-student-passwords"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
