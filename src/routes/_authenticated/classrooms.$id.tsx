@@ -1049,6 +1049,27 @@ function AssignmentsTab({
       if (!form.title.trim()) throw new Error(tr("ใส่ชื่องาน"));
       if (form.late_penalty_percent < 0 || form.late_penalty_percent > 100)
         throw new Error(tr("เปอร์เซ็นต์หักคะแนนต้องอยู่ระหว่าง 0-100"));
+
+      // upload attachment images
+      const attachments: { url: string; name: string; type: string }[] = [];
+      if (attachmentFiles.length > 0) {
+        setUploadingAttachments(true);
+        try {
+          for (const f of attachmentFiles) {
+            const path = `${user!.id}/assignments/${Date.now()}-${f.name}`;
+            const { error: ue } = await supabase.storage.from("uploads").upload(path, f);
+            if (ue) throw ue;
+            const { data: signed } = await supabase.storage
+              .from("uploads")
+              .createSignedUrl(path, 60 * 60 * 24 * 365);
+            if (signed?.signedUrl)
+              attachments.push({ url: signed.signedUrl, name: f.name, type: f.type });
+          }
+        } finally {
+          setUploadingAttachments(false);
+        }
+      }
+
       const { error } = await supabase.from("assignments").insert({
         classroom_id: classroomId,
         title: form.title.trim().slice(0, 200),
@@ -1061,12 +1082,14 @@ function AssignmentsTab({
         late_penalty_percent: form.late_penalty_percent,
         allow_late: form.allow_late,
         sample_video_url: form.sample_video_url.trim() || null,
+        attachments,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(tr("สร้างงานแล้ว"));
       setOpen(false);
+      setAttachmentFiles([]);
       qc.invalidateQueries({ queryKey: ["assignments", classroomId] });
     },
     onError: (e: Error) => toast.error(e.message),
