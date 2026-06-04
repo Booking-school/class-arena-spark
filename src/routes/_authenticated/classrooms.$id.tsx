@@ -1055,11 +1055,12 @@ function AssignmentsTab({
     queryFn: async () => {
       const ids = assignments?.map((a) => a.id) ?? [];
       if (ids.length === 0) return [];
+      // Include both: submissions I own AND submissions where I'm listed as a group member
       const { data, error } = await supabase
         .from("submissions")
         .select("*")
         .in("assignment_id", ids)
-        .eq("user_id", user!.id);
+        .or(`user_id.eq.${user!.id},group_member_ids.cs.{${user!.id}}`);
       if (error) throw error;
       return data;
     },
