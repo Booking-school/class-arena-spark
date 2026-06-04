@@ -1015,7 +1015,7 @@ function AssignmentsTab({
   const [groupMemberIds, setGroupMemberIds] = useState<string[]>([]);
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [uploadingAttachments, setUploadingAttachments] = useState(false);
-  const [viewStudentId, setViewStudentId] = useState<string | null>(null);
+  
 
   // Classmates (excluding self) for group picker
   const { data: classmates } = useQuery({
