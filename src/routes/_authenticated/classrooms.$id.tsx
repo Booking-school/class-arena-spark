@@ -1402,6 +1402,18 @@ function AssignmentsTab({
                       {tr("ดูวิดีโอตัวอย่าง")}
                     </a>
                   )}
+                  {Array.isArray(a.attachments) && a.attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {(a.attachments as { url: string; name?: string }[]).map((att, idx) => (
+                        <MediaPreview
+                          key={idx}
+                          url={att.url}
+                          alt={att.name || `attachment-${idx}`}
+                          thumbClassName="h-24 w-24 object-cover"
+                        />
+                      ))}
+                    </div>
+                  )}
                   {isOwner ? (
                     <SubmissionsList
                       assignmentId={a.id}
