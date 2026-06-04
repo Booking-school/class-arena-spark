@@ -1281,10 +1281,55 @@ function AssignmentsTab({
                     onChange={(e) => setForm({ ...form, sample_video_url: e.target.value })}
                   />
                 </div>
+                <div>
+                  <Label>{tr("แนบไฟล์รูป (เลือกได้หลายรูป)")}</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = e.target.files ? Array.from(e.target.files) : [];
+                      setAttachmentFiles((prev) => [...prev, ...files]);
+                      e.target.value = "";
+                    }}
+                  />
+                  {attachmentFiles.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {attachmentFiles.map((f, i) => (
+                        <div
+                          key={i}
+                          className="relative group rounded-md border bg-muted/40 p-1"
+                        >
+                          <img
+                            src={URL.createObjectURL(f)}
+                            alt={f.name}
+                            className="h-20 w-20 object-cover rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAttachmentFiles((prev) => prev.filter((_, idx) => idx !== i))
+                            }
+                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full size-5 grid place-items-center text-xs"
+                            aria-label={tr("ลบ")}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <DialogFooter>
-                <Button onClick={() => create.mutate()} disabled={create.isPending}>
-                  {tr("สร้าง")}
+                <Button
+                  onClick={() => create.mutate()}
+                  disabled={create.isPending || uploadingAttachments}
+                >
+                  {(create.isPending || uploadingAttachments) && (
+                    <Loader2 className="size-4 animate-spin mr-1" />
+                  )}
+                  {uploadingAttachments ? tr("กำลังอัปโหลด") : tr("สร้าง")}
                 </Button>
               </DialogFooter>
             </DialogContent>
