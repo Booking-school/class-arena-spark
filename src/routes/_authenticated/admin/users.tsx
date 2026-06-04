@@ -17,7 +17,13 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { listAuthUsers, adminResetPassword, adminDeleteUser } from "@/lib/admin-users.functions";
+import {
+  listAuthUsers,
+  adminResetPassword,
+  adminResetPasswordDefault,
+  adminDeleteUser,
+  listStudentPasswords,
+} from "@/lib/admin-users.functions";
 import type { AppRole } from "@/hooks/use-auth";
 
 import { tr } from "@/i18n";
