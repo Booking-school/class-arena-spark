@@ -1015,6 +1015,25 @@ function AssignmentsTab({
   const [groupMemberIds, setGroupMemberIds] = useState<string[]>([]);
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [uploadingAttachments, setUploadingAttachments] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    due_date: "",
+    max_score: 100,
+    xp_reward: 50,
+    assignment_type: "individual" as "individual" | "group",
+    status: "published" as "draft" | "published" | "closed",
+    late_penalty_percent: 0,
+    allow_late: true,
+    sample_video_url: "",
+  });
+  const [editExistingAttachments, setEditExistingAttachments] = useState<
+    { url: string; name?: string; type?: string }[]
+  >([]);
+  const [editNewAttachmentFiles, setEditNewAttachmentFiles] = useState<File[]>([]);
+  const [editUploading, setEditUploading] = useState(false);
+  
   
 
   // Classmates (excluding self) for group picker
