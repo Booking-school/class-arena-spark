@@ -125,7 +125,6 @@ Deno.serve(async (req) => {
                 required: [
                   "title",
                   "difficulty",
-                  "min_level",
                   "max_xp_reward",
                   "max_gold_reward",
                   "questions",
