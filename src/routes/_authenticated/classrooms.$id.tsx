@@ -1149,6 +1149,62 @@ function AssignmentsTab({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const editAssignment = useMutation({
+    mutationFn: async () => {
+      if (!editingId) throw new Error(tr("ไม่พบงาน"));
+      if (!editForm.title.trim()) throw new Error(tr("ใส่ชื่องาน"));
+      if (editForm.late_penalty_percent < 0 || editForm.late_penalty_percent > 100)
+        throw new Error(tr("เปอร์เซ็นต์หักคะแนนต้องอยู่ระหว่าง 0-100"));
+
+      const attachments = [...editExistingAttachments];
+      if (editNewAttachmentFiles.length > 0) {
+        setEditUploading(true);
+        try {
+          for (const f of editNewAttachmentFiles) {
+            const path = `${user!.id}/assignments/${Date.now()}-${f.name}`;
+            const { error: ue } = await supabase.storage.from("uploads").upload(path, f);
+            if (ue) throw ue;
+            const { data: signed } = await supabase.storage
+              .from("uploads")
+              .createSignedUrl(path, 60 * 60 * 24 * 365);
+            if (signed?.signedUrl)
+              attachments.push({ url: signed.signedUrl, name: f.name, type: f.type });
+          }
+        } finally {
+          setEditUploading(false);
+        }
+      }
+
+      const { error } = await supabase
+        .from("assignments")
+        .update({
+          title: editForm.title.trim().slice(0, 200),
+          description: editForm.description ? editForm.description.slice(0, 5000) : null,
+          due_date: editForm.due_date || null,
+          max_score: editForm.max_score,
+          xp_reward: editForm.xp_reward,
+          assignment_type: editForm.assignment_type,
+          status: editForm.status,
+          late_penalty_percent: editForm.late_penalty_percent,
+          allow_late: editForm.allow_late,
+          sample_video_url: editForm.sample_video_url.trim() || null,
+          attachments,
+        })
+        .eq("id", editingId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(tr("บันทึกการแก้ไขแล้ว"));
+      setEditingId(null);
+      setEditNewAttachmentFiles([]);
+      setEditExistingAttachments([]);
+      qc.invalidateQueries({ queryKey: ["assignments", classroomId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
+
   const submit = useMutation({
     mutationFn: async (assignmentId: string) => {
       const assignment = assignments?.find((a) => a.id === assignmentId);
