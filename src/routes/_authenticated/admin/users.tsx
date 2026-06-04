@@ -17,7 +17,13 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { listAuthUsers, adminResetPassword, adminDeleteUser } from "@/lib/admin-users.functions";
+import {
+  listAuthUsers,
+  adminResetPassword,
+  adminResetPasswordDefault,
+  adminDeleteUser,
+  listStudentPasswords,
+} from "@/lib/admin-users.functions";
 import type { AppRole } from "@/hooks/use-auth";
 
 import { tr } from "@/i18n";
@@ -30,9 +36,19 @@ function AdminUsers() {
   const qc = useQueryClient();
   const listFn = useServerFn(listAuthUsers);
   const resetFn = useServerFn(adminResetPassword);
+  const resetDefaultFn = useServerFn(adminResetPasswordDefault);
   const deleteFn = useServerFn(adminDeleteUser);
+  const listPwFn = useServerFn(listStudentPasswords);
   const [pwInputs, setPwInputs] = useState<Record<string, string>>({});
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState("");
+
+  const { data: pwData } = useQuery({
+    queryKey: ["admin-student-passwords"],
+    queryFn: () => listPwFn({}),
+    enabled: hasRole("admin"),
+  });
+  const pwMap = new Map((pwData?.passwords ?? []).map((p) => [p.user_id, p.password]));
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users-full"],
@@ -76,6 +92,16 @@ function AdminUsers() {
     onSuccess: (_d, vars) => {
       toast.success(tr("รีเซ็ตรหัสผ่านแล้ว"));
       setPwInputs((s) => ({ ...s, [vars.userId]: "" }));
+      qc.invalidateQueries({ queryKey: ["admin-student-passwords"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const resetDefault = useMutation({
+    mutationFn: (userId: string) => resetDefaultFn({ data: { userId } }),
+    onSuccess: () => {
+      toast.success(tr("รีเซ็ตเป็น 123456 แล้ว"));
+      qc.invalidateQueries({ queryKey: ["admin-student-passwords"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -156,13 +182,28 @@ function AdminUsers() {
                       <> • last sign-in {new Date(u.last_sign_in_at).toLocaleString()}</>
                     ) : null}
                   </p>
-                  <div className="flex gap-1 mt-1">
+                  <div className="flex gap-1 mt-1 items-center flex-wrap">
                     {u.roles.length === 0 && <Badge variant="secondary">no role</Badge>}
                     {u.roles.map((r: string) => (
                       <Badge key={r} variant="outline">
                         {r}
                       </Badge>
                     ))}
+                    {pwMap.has(u.id) && (
+                      <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                        • {tr("รหัสล่าสุด")}:{" "}
+                        <code className="font-mono bg-muted px-1.5 py-0.5 rounded">
+                          {revealed[u.id] ? pwMap.get(u.id) : "••••••"}
+                        </code>
+                        <button
+                          type="button"
+                          className="text-primary hover:underline"
+                          onClick={() => setRevealed((s) => ({ ...s, [u.id]: !s[u.id] }))}
+                        >
+                          {revealed[u.id] ? tr("ซ่อน") : tr("แสดง")}
+                        </button>
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -185,6 +226,16 @@ function AdminUsers() {
                       }
                     >
                       {tr("รีเซ็ต")}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={resetDefault.isPending}
+                      onClick={() => {
+                        if (confirm(`${tr("รีเซ็ตเป็น 123456")}?`)) resetDefault.mutate(u.id);
+                      }}
+                    >
+                      123456
                     </Button>
                   </div>
                   <Select

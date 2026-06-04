@@ -69,7 +69,48 @@ export const adminResetPassword = createServerFn({ method: "POST" })
       email_confirm: true,
     });
     if (error) throw new Error(error.message);
+    await supabaseAdmin
+      .from("student_passwords")
+      .upsert(
+        { user_id: data.userId, password: data.password, updated_at: new Date().toISOString() },
+        { onConflict: "user_id" },
+      );
     return { ok: true };
+  });
+
+const ResetDefaultSchema = z.object({ userId: z.string().uuid() });
+
+export const adminResetPasswordDefault = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => ResetDefaultSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const defaultPw = "123456";
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      password: defaultPw,
+      email_confirm: true,
+    });
+    if (error) throw new Error(error.message);
+    await supabaseAdmin
+      .from("student_passwords")
+      .upsert(
+        { user_id: data.userId, password: defaultPw, updated_at: new Date().toISOString() },
+        { onConflict: "user_id" },
+      );
+    return { ok: true, password: defaultPw };
+  });
+
+export const listStudentPasswords = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("student_passwords")
+      .select("user_id, password, updated_at");
+    if (error) throw new Error(error.message);
+    return { passwords: data ?? [] };
   });
 
 const DeleteSchema = z.object({ userId: z.string().uuid() });
