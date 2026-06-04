@@ -1012,6 +1012,8 @@ function AssignmentsTab({
   const [submitFor, setSubmitFor] = useState<string | null>(null);
   const [subContent, setSubContent] = useState("");
   const [subFile, setSubFile] = useState<File | null>(null);
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [uploadingAttachments, setUploadingAttachments] = useState(false);
 
   const { data: assignments } = useQuery({
     queryKey: ["assignments", classroomId],
