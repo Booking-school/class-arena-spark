@@ -26,9 +26,10 @@ export const signInProxy = createServerFn({ method: "POST" })
       auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
     });
     const email = toEmail(data.identifier);
+    const password = data.password.trim();
     const { data: res, error } = await sb.auth.signInWithPassword({
       email,
-      password: data.password,
+      password,
     });
     if (error || !res.session) {
       throw new Error("อีเมล/ID หรือรหัสผ่านไม่ถูกต้อง");
