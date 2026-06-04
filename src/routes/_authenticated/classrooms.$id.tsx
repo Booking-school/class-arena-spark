@@ -1012,6 +1012,8 @@ function AssignmentsTab({
   const [submitFor, setSubmitFor] = useState<string | null>(null);
   const [subContent, setSubContent] = useState("");
   const [subFile, setSubFile] = useState<File | null>(null);
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [uploadingAttachments, setUploadingAttachments] = useState(false);
 
   const { data: assignments } = useQuery({
     queryKey: ["assignments", classroomId],
@@ -1047,6 +1049,27 @@ function AssignmentsTab({
       if (!form.title.trim()) throw new Error(tr("ใส่ชื่องาน"));
       if (form.late_penalty_percent < 0 || form.late_penalty_percent > 100)
         throw new Error(tr("เปอร์เซ็นต์หักคะแนนต้องอยู่ระหว่าง 0-100"));
+
+      // upload attachment images
+      const attachments: { url: string; name: string; type: string }[] = [];
+      if (attachmentFiles.length > 0) {
+        setUploadingAttachments(true);
+        try {
+          for (const f of attachmentFiles) {
+            const path = `${user!.id}/assignments/${Date.now()}-${f.name}`;
+            const { error: ue } = await supabase.storage.from("uploads").upload(path, f);
+            if (ue) throw ue;
+            const { data: signed } = await supabase.storage
+              .from("uploads")
+              .createSignedUrl(path, 60 * 60 * 24 * 365);
+            if (signed?.signedUrl)
+              attachments.push({ url: signed.signedUrl, name: f.name, type: f.type });
+          }
+        } finally {
+          setUploadingAttachments(false);
+        }
+      }
+
       const { error } = await supabase.from("assignments").insert({
         classroom_id: classroomId,
         title: form.title.trim().slice(0, 200),
@@ -1059,12 +1082,14 @@ function AssignmentsTab({
         late_penalty_percent: form.late_penalty_percent,
         allow_late: form.allow_late,
         sample_video_url: form.sample_video_url.trim() || null,
+        attachments,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(tr("สร้างงานแล้ว"));
       setOpen(false);
+      setAttachmentFiles([]);
       qc.invalidateQueries({ queryKey: ["assignments", classroomId] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -1256,10 +1281,55 @@ function AssignmentsTab({
                     onChange={(e) => setForm({ ...form, sample_video_url: e.target.value })}
                   />
                 </div>
+                <div>
+                  <Label>{tr("แนบไฟล์รูป (เลือกได้หลายรูป)")}</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = e.target.files ? Array.from(e.target.files) : [];
+                      setAttachmentFiles((prev) => [...prev, ...files]);
+                      e.target.value = "";
+                    }}
+                  />
+                  {attachmentFiles.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {attachmentFiles.map((f, i) => (
+                        <div
+                          key={i}
+                          className="relative group rounded-md border bg-muted/40 p-1"
+                        >
+                          <img
+                            src={URL.createObjectURL(f)}
+                            alt={f.name}
+                            className="h-20 w-20 object-cover rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAttachmentFiles((prev) => prev.filter((_, idx) => idx !== i))
+                            }
+                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full size-5 grid place-items-center text-xs"
+                            aria-label={tr("ลบ")}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <DialogFooter>
-                <Button onClick={() => create.mutate()} disabled={create.isPending}>
-                  {tr("สร้าง")}
+                <Button
+                  onClick={() => create.mutate()}
+                  disabled={create.isPending || uploadingAttachments}
+                >
+                  {(create.isPending || uploadingAttachments) && (
+                    <Loader2 className="size-4 animate-spin mr-1" />
+                  )}
+                  {uploadingAttachments ? tr("กำลังอัปโหลด") : tr("สร้าง")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -1331,6 +1401,18 @@ function AssignmentsTab({
                     >
                       {tr("ดูวิดีโอตัวอย่าง")}
                     </a>
+                  )}
+                  {Array.isArray(a.attachments) && a.attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {(a.attachments as { url: string; name?: string }[]).map((att, idx) => (
+                        <MediaPreview
+                          key={idx}
+                          url={att.url}
+                          alt={att.name || `attachment-${idx}`}
+                          thumbClassName="h-24 w-24 object-cover"
+                        />
+                      ))}
+                    </div>
                   )}
                   {isOwner ? (
                     <SubmissionsList
