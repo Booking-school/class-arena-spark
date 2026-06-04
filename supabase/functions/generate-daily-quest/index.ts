@@ -87,10 +87,6 @@ Deno.serve(async (req) => {
                 properties: {
                   title: { type: "string" },
                   difficulty: { type: "string", enum: ["easy", "normal", "hard"] },
-                  min_level: {
-                    type: "number",
-                    description: "Minimum student level to unlock (1-20)",
-                  },
                   max_xp_reward: {
                     type: "number",
                     description: "Max XP awarded for perfect score (50-300)",
