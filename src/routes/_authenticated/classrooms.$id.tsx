@@ -1650,6 +1650,7 @@ function SubmissionsList({
         <GradeRow
           key={s.id}
           sub={s}
+          classroomId={classroomId}
           maxScore={maxScore}
           onGrade={(score, feedback) =>
             grade.mutate({ id: s.id, score, feedback, userId: s.user_id })
@@ -1662,21 +1663,41 @@ function SubmissionsList({
 
 function GradeRow({
   sub,
+  classroomId,
   maxScore,
   onGrade,
 }: {
   sub: SubmissionRow;
+  classroomId: string;
   maxScore: number;
   onGrade: (score: number, fb: string) => void;
 }) {
   const [score, setScore] = useState(sub.score ?? 0);
   const [fb, setFb] = useState(sub.feedback ?? "");
+  const [openStudent, setOpenStudent] = useState<string | null>(null);
+  const groupIds = Array.isArray(sub.group_member_ids) ? (sub.group_member_ids as string[]) : [];
   return (
     <Card className="bg-muted/30">
       <CardContent className="pt-4 space-y-2">
         <p className="text-xs text-muted-foreground">
-          นักเรียน: {sub.profiles?.display_name ?? sub.user_id.slice(0, 8)}
+          {tr("นักเรียน:")}{" "}
+          <button
+            type="button"
+            onClick={() => setOpenStudent(sub.user_id)}
+            className="text-primary underline-offset-2 hover:underline font-medium"
+          >
+            {sub.profiles?.display_name ?? sub.user_id.slice(0, 8)}
+          </button>
         </p>
+        {groupIds.length > 0 && (
+          <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
+            <span>{tr("ร่วมกับ:")}</span>
+            <GroupMembersInline
+              ids={groupIds}
+              onClick={(id) => setOpenStudent(id)}
+            />
+          </div>
+        )}
         {sub.content && (
           <p className="text-sm whitespace-pre-wrap leading-relaxed">{sub.content}</p>
         )}
@@ -1707,7 +1728,202 @@ function GradeRow({
           </Button>
         </div>
       </CardContent>
+      {openStudent && (
+        <StudentSubmissionsDialog
+          studentId={openStudent}
+          classroomId={classroomId}
+          maxScore={maxScore}
+          onClose={() => setOpenStudent(null)}
+        />
+      )}
     </Card>
+  );
+}
+
+function GroupSubmittedBy({ submitterId }: { submitterId: string }) {
+  const { data } = useQuery({
+    queryKey: ["profile-name", submitterId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", submitterId)
+        .maybeSingle();
+      return data?.display_name ?? submitterId.slice(0, 8);
+    },
+  });
+  return (
+    <p className="text-xs text-muted-foreground">
+      {tr("ส่งโดย:")} {data ?? "…"}
+    </p>
+  );
+}
+
+function GroupMembersInline({
+  ids,
+  onClick,
+}: {
+  ids: string[];
+  onClick?: (id: string) => void;
+}) {
+  const { data } = useQuery({
+    queryKey: ["profiles-names", ids.join(",")],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", ids);
+      return (data ?? []) as { id: string; display_name: string | null }[];
+    },
+    enabled: ids.length > 0,
+  });
+  const map = new Map((data ?? []).map((p) => [p.id, p.display_name]));
+  return (
+    <>
+      {ids.map((id, i) => (
+        <span key={id}>
+          {onClick ? (
+            <button
+              type="button"
+              onClick={() => onClick(id)}
+              className="text-primary underline-offset-2 hover:underline"
+            >
+              {map.get(id) ?? id.slice(0, 8)}
+            </button>
+          ) : (
+            <span>{map.get(id) ?? id.slice(0, 8)}</span>
+          )}
+          {i < ids.length - 1 && <span>, </span>}
+        </span>
+      ))}
+    </>
+  );
+}
+
+function StudentSubmissionsDialog({
+  studentId,
+  classroomId,
+  maxScore: _maxScore,
+  onClose,
+}: {
+  studentId: string;
+  classroomId: string;
+  maxScore: number;
+  onClose: () => void;
+}) {
+  const { data: profile } = useQuery({
+    queryKey: ["profile-name", studentId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("id", studentId)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["student-submissions", classroomId, studentId],
+    queryFn: async () => {
+      const { data: assigns, error: ae } = await supabase
+        .from("assignments")
+        .select("id, title, max_score, due_date, created_at")
+        .eq("classroom_id", classroomId)
+        .order("created_at", { ascending: false });
+      if (ae) throw ae;
+      const ids = (assigns ?? []).map((a) => a.id);
+      if (ids.length === 0) return [];
+      const { data: subs } = await supabase
+        .from("submissions")
+        .select("*")
+        .in("assignment_id", ids)
+        .or(`user_id.eq.${studentId},group_member_ids.cs.{${studentId}}`);
+      const subMap = new Map((subs ?? []).map((s) => [s.assignment_id, s]));
+      return (assigns ?? []).map((a) => ({
+        assignment: a,
+        submission: subMap.get(a.id) ?? null,
+      }));
+    },
+  });
+
+  return (
+    <Dialog open onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {tr("งานทั้งหมดของ")} {profile?.display_name ?? studentId.slice(0, 8)}
+          </DialogTitle>
+        </DialogHeader>
+        {isLoading && <p className="text-sm text-muted-foreground">{tr("กำลังโหลด…")}</p>}
+        {rows?.length === 0 && (
+          <p className="text-sm text-muted-foreground">{tr("ห้องนี้ยังไม่มีงาน")}</p>
+        )}
+        <div className="space-y-3">
+          {rows?.map(({ assignment, submission }) => (
+            <Card key={assignment.id} className="bg-muted/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center justify-between gap-2 flex-wrap">
+                  <span>{assignment.title}</span>
+                  {submission ? (
+                    submission.user_id === studentId ? (
+                      <Badge className="bg-green-100 text-green-900">{tr("ส่งแล้ว")}</Badge>
+                    ) : (
+                      <Badge variant="secondary">{tr("ส่งโดยกลุ่ม")}</Badge>
+                    )
+                  ) : (
+                    <Badge variant="destructive">{tr("ยังไม่ส่ง")}</Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {submission ? (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      {tr("ส่งเมื่อ")}:{" "}
+                      {submission.submitted_at
+                        ? new Date(submission.submitted_at).toLocaleString("th-TH")
+                        : "—"}
+                      {submission.is_late && (
+                        <Badge variant="destructive" className="ml-2">
+                          {tr("ส่งช้า")}
+                        </Badge>
+                      )}
+                    </p>
+                    {submission.content && (
+                      <p className="whitespace-pre-wrap leading-relaxed">{submission.content}</p>
+                    )}
+                    {submission.file_url && (
+                      <MediaPreview
+                        url={submission.file_url}
+                        alt={tr("ไฟล์แนบ")}
+                        fallbackLabel={tr("ไฟล์แนบ")}
+                        thumbClassName="h-24 w-auto max-w-[160px]"
+                      />
+                    )}
+                    {submission.score != null && (
+                      <p>
+                        {tr("คะแนน:")}{" "}
+                        <span className="font-semibold">
+                          {submission.score}/{assignment.max_score}
+                        </span>
+                      </p>
+                    )}
+                    {submission.feedback && (
+                      <p className="text-muted-foreground">
+                        {tr("ความคิดเห็น:")} {submission.feedback}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">{tr("นักเรียนยังไม่ได้ส่งงานนี้")}</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
