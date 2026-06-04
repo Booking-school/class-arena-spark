@@ -2600,7 +2600,7 @@ function DailyQuestsTab({ classroomId, isOwner }: { classroomId: string; isOwner
         )}
         {quests?.map((q) => {
           const att = attempts?.find((a) => a.quest_id === q.id);
-          const locked = (profile?.level ?? 1) < (q.min_level ?? 1);
+          const locked = false;
           if (isOwner) {
             return (
               <div key={q.id ?? q.title ?? q.topic ?? "daily-quest"} className="relative">
