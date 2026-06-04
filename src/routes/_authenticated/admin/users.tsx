@@ -36,9 +36,19 @@ function AdminUsers() {
   const qc = useQueryClient();
   const listFn = useServerFn(listAuthUsers);
   const resetFn = useServerFn(adminResetPassword);
+  const resetDefaultFn = useServerFn(adminResetPasswordDefault);
   const deleteFn = useServerFn(adminDeleteUser);
+  const listPwFn = useServerFn(listStudentPasswords);
   const [pwInputs, setPwInputs] = useState<Record<string, string>>({});
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState("");
+
+  const { data: pwData } = useQuery({
+    queryKey: ["admin-student-passwords"],
+    queryFn: () => listPwFn({}),
+    enabled: hasRole("admin"),
+  });
+  const pwMap = new Map((pwData?.passwords ?? []).map((p) => [p.user_id, p.password]));
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users-full"],
