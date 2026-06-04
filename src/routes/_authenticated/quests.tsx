@@ -222,7 +222,7 @@ function QuestsPage() {
         )}
         {sortedQuests?.map((q) => {
           const att = attemptList.find((a) => a.quest_id === q.id);
-          const locked = lvl < (q.min_level ?? 1);
+          const locked = false;
           const qWithClass = {
             ...q,
             classrooms: q.classroom_id ? { name: classMap[q.classroom_id] } : null,
