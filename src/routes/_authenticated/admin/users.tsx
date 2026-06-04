@@ -182,13 +182,28 @@ function AdminUsers() {
                       <> • last sign-in {new Date(u.last_sign_in_at).toLocaleString()}</>
                     ) : null}
                   </p>
-                  <div className="flex gap-1 mt-1">
+                  <div className="flex gap-1 mt-1 items-center flex-wrap">
                     {u.roles.length === 0 && <Badge variant="secondary">no role</Badge>}
                     {u.roles.map((r: string) => (
                       <Badge key={r} variant="outline">
                         {r}
                       </Badge>
                     ))}
+                    {pwMap.has(u.id) && (
+                      <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                        • {tr("รหัสล่าสุด")}:{" "}
+                        <code className="font-mono bg-muted px-1.5 py-0.5 rounded">
+                          {revealed[u.id] ? pwMap.get(u.id) : "••••••"}
+                        </code>
+                        <button
+                          type="button"
+                          className="text-primary hover:underline"
+                          onClick={() => setRevealed((s) => ({ ...s, [u.id]: !s[u.id] }))}
+                        >
+                          {revealed[u.id] ? tr("ซ่อน") : tr("แสดง")}
+                        </button>
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -211,6 +226,16 @@ function AdminUsers() {
                       }
                     >
                       {tr("รีเซ็ต")}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={resetDefault.isPending}
+                      onClick={() => {
+                        if (confirm(`${tr("รีเซ็ตเป็น 123456")}?`)) resetDefault.mutate(u.id);
+                      }}
+                    >
+                      123456
                     </Button>
                   </div>
                   <Select
