@@ -61,9 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const applySession = (nextSession: Session | null) => {
       if (!mounted) return;
       const nextUser = nextSession?.user ?? null;
+      const previousUserId = activeUserIdRef.current;
+      const nextUserId = nextUser?.id ?? null;
       activeUserIdRef.current = nextUser?.id ?? null;
       setSession(nextSession);
       setUser(nextUser);
+      if (nextUserId && previousUserId === nextUserId) return;
       if (nextUser) {
         setLoading(true);
         setRoles([]);
