@@ -37,7 +37,7 @@ function Landing() {
             <div className="grid size-9 place-items-center rounded-md bg-primary text-sm font-semibold text-primary-foreground transition-transform group-hover:-translate-y-0.5">
               SH
             </div>
-            <span className="font-semibold leading-tight">Scholar Hall</span>
+            <span className="font-semibold leading-tight">โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ</span>
           </Link>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <LanguageSwitcher />
@@ -83,14 +83,14 @@ function Landing() {
             <div className="scholar-entrance max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
                 <MonitorPlay className="size-4" />
-                {tr("Connected classroom สำหรับโรงเรียนไทย")}
+                {tr("Connected classroom สำหรับโรงเรียน")}
               </div>
               <h1 className="mt-6 text-5xl font-semibold leading-[1.05] text-balance sm:text-6xl">
-                Scholar Hall
+                โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground text-pretty">
                 {tr(
-                  "ศูนย์กลางสำหรับจองห้องประชุมและห้องเรียนเกมมิฟาย ครู นักเรียน ผู้จอง และแอดมินเห็นทางเข้าที่ต้องใช้ได้ทันที",
+                  "ศูนย์กลางสำหรับจองห้องประชุมและห้องเรียน",
                 )}
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -144,7 +144,7 @@ function Landing() {
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
             <div>
               <h2 className="text-3xl font-semibold leading-tight text-balance">
-                {tr("ออกแบบให้คนแต่ละบทบาทเห็นงานของตัวเองก่อน")}
+                {tr("ออกแบบให้แต่ละคนเห็นงานของตัวเองก่อน")}
               </h2>
               <p className="mt-3 max-w-xl text-muted-foreground leading-relaxed">
                 {tr(
@@ -182,7 +182,7 @@ function Landing() {
 
       <footer className="border-t border-border/70">
         <div className="mx-auto max-w-6xl px-5 py-6 text-sm text-muted-foreground sm:px-6">
-          © {new Date().getFullYear()} Scholar Hall
+          © {new Date().getFullYear()} โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ
         </div>
       </footer>
     </div>
@@ -295,10 +295,10 @@ function ProductPreview() {
           </div>
           <div className="mt-4 space-y-2 text-sm">
             <div className="rounded-lg bg-secondary/65 px-3 py-2">
-              {tr("สรุปบทเรียนล่าสุดให้นักเรียนอ่านซ้ำ")}
+              {tr("สรุปบทเรียนล่าสุดให้นักเรียนอ่านซ้ำได้")}
             </div>
             <div className="rounded-lg bg-primary/10 px-3 py-2 text-primary">
-              {tr("แนะนำ Daily Quest จากเนื้อหาที่ครูสอน")}
+              {tr("Daily Quest จากเนื้อหาที่ครูสอน")}
             </div>
           </div>
         </div>

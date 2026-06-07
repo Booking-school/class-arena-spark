@@ -144,7 +144,7 @@ function LoginPage() {
       </div>
       <aside className="hidden lg:flex flex-col justify-between bg-secondary p-12">
         <Link to="/" className="inline-flex min-h-11 items-center font-display text-xl">
-          Scholar Hall
+          โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ
         </Link>
         <div>
           <h2 className="font-display text-4xl leading-tight">
@@ -156,7 +156,7 @@ function LoginPage() {
             สะสม XP ปลดล็อกตำแหน่ง และทำเควสต์การเรียนรู้ในทุกบทเรียน
           </p>
         </div>
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Scholar Hall</p>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ</p>
       </aside>
 
       <main className="flex items-center justify-center p-6">

@@ -75,20 +75,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: tr("Scholar Hall: ห้องเรียนและห้องประชุม") },
+      { title: tr("โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ: ห้องเรียนและห้องประชุม") },
       {
         name: "description",
-        content: tr("ระบบจัดการห้องเรียน ห้องประชุม และระบบเควสต์สำหรับการเรียนรู้"),
+        content: tr("ศูนย์กลางสำหรับจองห้องประชุมและห้องเรียน"),
       },
-      { property: "og:title", content: tr("Scholar Hall: ห้องเรียนและห้องประชุม") },
-      { name: "twitter:title", content: tr("Scholar Hall: ห้องเรียนและห้องประชุม") },
+      { property: "og:title", content: tr("โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ: ห้องเรียนและห้องประชุม") },
+      { name: "twitter:title", content: tr("โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ: ห้องเรียนและห้องประชุม") },
       {
         property: "og:description",
-        content: tr("ระบบจัดการห้องเรียน ห้องประชุม และระบบเควสต์สำหรับการเรียนรู้"),
+        content: tr("ศูนย์กลางสำหรับจองห้องประชุมและห้องเรียน"),
       },
       {
         name: "twitter:description",
-        content: tr("ระบบจัดการห้องเรียน ห้องประชุม และระบบเควสต์สำหรับการเรียนรู้"),
+        content: tr("ศูนย์กลางสำหรับจองห้องประชุมและห้องเรียน"),
       },
       {
         property: "og:image",
