@@ -83,6 +83,9 @@ type ActivityEvent = {
 
 function Dashboard() {
   const { user, roles } = useAuth();
+  if (roles.includes("room_admin") && !roles.includes("admin") && !roles.includes("teacher") && !roles.includes("student")) {
+    return <Navigate to="/bookings" />;
+  }
   const primary: "admin" | "teacher" | "student" = roles.includes("admin")
     ? "admin"
     : roles.includes("teacher")
