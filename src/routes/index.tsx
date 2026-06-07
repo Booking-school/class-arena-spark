@@ -26,6 +26,11 @@ import { tr } from "@/i18n";
 
 export const Route = createFileRoute("/")({ component: Landing });
 
+const vehicleManagementUrl =
+  "https://script.google.com/macros/s/AKfycbwu0D-LS8pF5CQ6PRgJ0ubF2caPUsn1gZyDWuyPKAggBhiL2Z4m8HUm0U3dFyz7Xs0a/exec";
+const facilitiesRepairUrl =
+  "https://script.google.com/macros/s/AKfycbybGK2s9BNfCtRJ6Z8Om5REYKQl1dRu7eyVHveKhsiK27GdLIHE3Bi1dte-Gxx2ZUGM/exec";
+
 function Landing() {
   const { user } = useAuth();
 
@@ -89,9 +94,7 @@ function Landing() {
                 โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground text-pretty">
-                {tr(
-                  "ศูนย์กลางสำหรับจองห้องประชุมและห้องเรียน",
-                )}
+                {tr("ศูนย์กลางสำหรับจองห้องประชุมและห้องเรียน")}
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Button asChild className="min-h-12" size="lg">
@@ -198,7 +201,7 @@ function EntryGateway({ isSignedIn }: { isSignedIn: boolean }) {
           {tr("เลือกทางเข้า")}
         </div>
         <span className="hidden text-sm text-muted-foreground sm:inline">
-          {tr("Public + Classroom")}
+          {tr("บริการโรงเรียน")}
         </span>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -252,6 +255,52 @@ function EntryGateway({ isSignedIn }: { isSignedIn: boolean }) {
               </Button>
             ) : null}
           </div>
+        </article>
+
+        <article className="scholar-spotlight-card scholar-sheen rounded-lg border bg-card p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <span className="inline-flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <Calendar className="size-5" />
+            </span>
+            <span className="rounded-full border border-primary/20 bg-background px-2.5 py-1 text-xs font-medium text-primary">
+              {tr("บริการภายนอก")}
+            </span>
+          </div>
+          <h2 className="mt-5 text-2xl font-semibold leading-tight">
+            {tr("ระบบบริหารยานพาหนะราชการ")}
+          </h2>
+          <p className="mt-2 min-h-12 text-sm leading-relaxed text-muted-foreground">
+            {tr("จองและติดตามการใช้ยานพาหนะราชการผ่านระบบกลาง")}
+          </p>
+          <Button asChild className="mt-5 min-h-12 w-full" size="lg" variant="outline">
+            <a href={vehicleManagementUrl} target="_blank" rel="noreferrer">
+              <ArrowRight className="size-4" />
+              {tr("เปิดระบบ")}
+            </a>
+          </Button>
+        </article>
+
+        <article className="scholar-spotlight-card scholar-sheen rounded-lg border bg-card p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <span className="inline-flex size-11 items-center justify-center rounded-md bg-gold/15 text-gold">
+              <ClipboardCheck className="size-5" />
+            </span>
+            <span className="rounded-full border border-gold/25 bg-background px-2.5 py-1 text-xs font-medium text-foreground">
+              {tr("บริการภายนอก")}
+            </span>
+          </div>
+          <h2 className="mt-5 text-2xl font-semibold leading-tight">
+            {tr("ระบบแจ้งซ่อมอาคารสถานที่")}
+          </h2>
+          <p className="mt-2 min-h-12 text-sm leading-relaxed text-muted-foreground">
+            {tr("แจ้งปัญหาอาคาร สถานที่ และติดตามงานซ่อมจากระบบออนไลน์")}
+          </p>
+          <Button asChild className="mt-5 min-h-12 w-full" size="lg" variant="outline">
+            <a href={facilitiesRepairUrl} target="_blank" rel="noreferrer">
+              <ArrowRight className="size-4" />
+              {tr("เปิดระบบ")}
+            </a>
+          </Button>
         </article>
       </div>
     </div>

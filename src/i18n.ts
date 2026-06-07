@@ -15,7 +15,8 @@ const enDict: Record<string, string> = {
   "AI ไม่คืนคำถามที่ใช้ได้ ลองอีกครั้ง": "AI didn't return usable questions. Try again.",
   "AI ไม่ได้ส่งบัตรคำกลับมา": "AI did not return any flashcards",
   "Google sign-in ไม่สำเร็จ": "Google sign-in failed",
-  "โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ: ห้องเรียนและห้องประชุม": "Scholar Hall: Classrooms and Meeting Rooms",
+  "โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ: ห้องเรียนและห้องประชุม":
+    "Scholar Hall: Classrooms and Meeting Rooms",
   "Booking · Classroom · Quest · Admin": "Booking · Classroom · Quest · Admin",
   "URL รูปห้อง": "Room Image URL",
   "XP ตอบแทน": "XP Reward",
@@ -164,7 +165,7 @@ const enDict: Record<string, string> = {
   "พิมพ์คำถาม...": "Type a question...",
   ภาพรวมความก้าวหน้าและกิจกรรมของคุณ: "Overview of your progress and activities",
   ภาพรวมระบบและการอนุมัติ: "System overview and approvals",
-  "ภาพรวมโรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ": "Scholar Hall Overview",
+  ภาพรวมโรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ: "Scholar Hall Overview",
   ภาพรวมห้องเรียน: "Classroom Overview",
   ภาพรวมห้องเรียนและงานของคุณ: "Your classroom and assignment overview",
   ภาษา: "Language",
@@ -222,6 +223,8 @@ const enDict: Record<string, string> = {
   "ระบบจัดการห้องเรียน ห้องประชุม และระบบเควสต์สำหรับการเรียนรู้":
     "A management system for classrooms, meeting rooms, and learning quests",
   ระบบห้องเรียนและห้องประชุม: "Classroom and Meeting Room System",
+  ระบบบริหารยานพาหนะราชการ: "Government Vehicle Management System",
+  ระบบแจ้งซ่อมอาคารสถานที่: "Building and Facilities Repair Request System",
   "ระยะเวลาขั้นต่ำ 15 นาที": "Minimum duration is 15 minutes",
   "ระบุเหตุผล (จะส่งแจ้งเตือนให้ผู้จอง)":
     "Specify reason (a notification will be sent to the booker)",
@@ -281,6 +284,8 @@ const enDict: Record<string, string> = {
   "สะสมเหรียญตรา ปลดล็อก Achievement และซื้อฉายาเท่จากร้านค้า":
     "Collect badges, unlock Achievements, and buy cool titles from the shop.",
   สาธารณะ: "Public",
+  บริการภายนอก: "External Service",
+  บริการโรงเรียน: "School Services",
   สาย: "Late",
   "สิ่งอำนวยความสะดวก (คั่นด้วย ,)": "Amenities (separated by ,)",
   สิ้นสุด: "End",
@@ -385,6 +390,7 @@ const enDict: Record<string, string> = {
   "เปลี่ยน role": "Change Role",
   เปลี่ยนฉายาแล้ว: "Title changed",
   เปิด: "Open",
+  เปิดระบบ: "Open System",
   "เปิดรหัสเช็กชื่อแล้ว 15 นาที": "Check-in code is open for 15 minutes",
   เปิดเช็กชื่อ: "Start Check-in",
   เผยแพร่สาธารณะ: "Publish Publicly",
@@ -485,6 +491,10 @@ const enDict: Record<string, string> = {
   เข้าร่วมควิซ: "Join Quiz",
   หอเกียรติยศ: "Hall of Fame",
   โปรไฟล์: "Profile",
+  จองและติดตามการใช้ยานพาหนะราชการผ่านระบบกลาง:
+    "Book and track official vehicle use through the central system",
+  "แจ้งปัญหาอาคาร สถานที่ และติดตามงานซ่อมจากระบบออนไลน์":
+    "Report building and facilities issues and track repairs online",
 };
 
 const resources = {
