@@ -39,13 +39,14 @@ type Group = { label: string; items: Item[]; roles?: AppRole[] };
 const groups: Group[] = [
   {
     label: "ทั่วไป",
+    roles: ["student", "teacher", "admin", "guest"],
     items: [
-      { label: "แดชบอร์ด", url: "/dashboard", icon: LayoutDashboard },
-      { label: "ภารกิจสัปดาห์", url: "/weekly-missions", icon: CalendarCheck },
-      { label: "คะแนนพิเศษ", url: "/bonus-center", icon: Trophy },
-      { label: "ห้องเรียน", url: "/classrooms", icon: BookOpen },
-      { label: "บัตรคำศัพท์", url: "/flashcards", icon: Layers },
-      { label: "โปรไฟล์", url: "/profile", icon: UserCircle },
+      { label: "แดชบอร์ด", url: "/dashboard", icon: LayoutDashboard, roles: ["student", "teacher", "admin", "guest"] },
+      { label: "ภารกิจสัปดาห์", url: "/weekly-missions", icon: CalendarCheck, roles: ["student", "teacher", "admin", "guest"] },
+      { label: "คะแนนพิเศษ", url: "/bonus-center", icon: Trophy, roles: ["student", "teacher", "admin", "guest"] },
+      { label: "ห้องเรียน", url: "/classrooms", icon: BookOpen, roles: ["student", "teacher", "admin", "guest"] },
+      { label: "บัตรคำศัพท์", url: "/flashcards", icon: Layers, roles: ["student", "teacher", "admin", "guest"] },
+      { label: "โปรไฟล์", url: "/profile", icon: UserCircle, roles: ["student", "teacher", "admin", "guest", "room_admin"] },
     ],
   },
   {
@@ -70,6 +71,14 @@ const groups: Group[] = [
         icon: BarChart3,
         roles: ["teacher", "admin"],
       },
+    ],
+  },
+  {
+    label: "ห้องประชุม",
+    roles: ["room_admin"],
+    items: [
+      { label: "การจองห้อง", url: "/bookings", icon: Calendar, roles: ["room_admin"] },
+      { label: "จัดการห้อง", url: "/admin/rooms", icon: DoorOpen, roles: ["room_admin"] },
     ],
   },
   {

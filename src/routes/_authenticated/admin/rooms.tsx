@@ -58,7 +58,7 @@ function AdminRooms() {
   const { data } = useQuery({
     queryKey: ["admin-rooms"],
     queryFn: async () => (await supabase.from("rooms").select("*").order("name")).data ?? [],
-    enabled: hasRole("admin"),
+    enabled: hasRole("admin") || hasRole("room_admin"),
   });
 
   function buildPayload() {
@@ -136,7 +136,7 @@ function AdminRooms() {
   }
 
   if (loading) return null;
-  if (!hasRole("admin")) return <Navigate to="/dashboard" />;
+  if (!hasRole("admin") && !hasRole("room_admin")) return <Navigate to="/bookings" />;
 
   return (
     <div className="mx-auto max-w-5xl p-6 lg:p-10 space-y-6">

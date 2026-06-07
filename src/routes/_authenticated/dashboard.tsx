@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -83,6 +83,9 @@ type ActivityEvent = {
 
 function Dashboard() {
   const { user, roles } = useAuth();
+  if (roles.includes("room_admin") && !roles.includes("admin") && !roles.includes("teacher") && !roles.includes("student")) {
+    return <Navigate to="/bookings" />;
+  }
   const primary: "admin" | "teacher" | "student" = roles.includes("admin")
     ? "admin"
     : roles.includes("teacher")
