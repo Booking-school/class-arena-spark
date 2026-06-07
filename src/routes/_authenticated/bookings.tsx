@@ -53,8 +53,8 @@ function BookingsPage() {
     notes: "",
   });
 
-  const canBook = hasRole("teacher") || hasRole("admin");
-  const isAdmin = hasRole("admin");
+  const canBook = hasRole("teacher") || hasRole("admin") || hasRole("room_admin");
+  const isAdmin = hasRole("admin") || hasRole("room_admin");
 
   const { data: rooms } = useQuery({
     queryKey: ["rooms"],
