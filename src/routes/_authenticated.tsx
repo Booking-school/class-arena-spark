@@ -39,7 +39,7 @@ function AuthenticatedLayout() {
               <span className="text-sm text-muted-foreground hidden sm:inline">
                 {user.email}
                 {(() => {
-                  const primary = (["admin", "teacher", "student", "guest"] as const).find((r) =>
+                  const primary = (["admin", "room_admin", "teacher", "student", "guest"] as const).find((r) =>
                     roles.includes(r),
                   );
                   return primary ? (
