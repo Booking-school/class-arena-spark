@@ -58,7 +58,7 @@ function AdminRooms() {
   const { data } = useQuery({
     queryKey: ["admin-rooms"],
     queryFn: async () => (await supabase.from("rooms").select("*").order("name")).data ?? [],
-    enabled: hasRole("admin"),
+    enabled: hasRole("admin") || hasRole("room_admin"),
   });
 
   function buildPayload() {
