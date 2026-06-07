@@ -110,7 +110,7 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <span className="block truncate text-sm font-semibold">Scholar Hall</span>
+              <span className="block truncate text-sm font-semibold">โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ</span>
               <span className="block truncate text-xs text-sidebar-foreground/65">
                 {tr("Connected classroom")}
               </span>
