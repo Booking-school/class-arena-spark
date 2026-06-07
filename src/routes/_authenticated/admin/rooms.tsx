@@ -136,7 +136,7 @@ function AdminRooms() {
   }
 
   if (loading) return null;
-  if (!hasRole("admin")) return <Navigate to="/dashboard" />;
+  if (!hasRole("admin") && !hasRole("room_admin")) return <Navigate to="/bookings" />;
 
   return (
     <div className="mx-auto max-w-5xl p-6 lg:p-10 space-y-6">
