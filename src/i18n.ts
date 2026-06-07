@@ -15,7 +15,7 @@ const enDict: Record<string, string> = {
   "AI ไม่คืนคำถามที่ใช้ได้ ลองอีกครั้ง": "AI didn't return usable questions. Try again.",
   "AI ไม่ได้ส่งบัตรคำกลับมา": "AI did not return any flashcards",
   "Google sign-in ไม่สำเร็จ": "Google sign-in failed",
-  "Scholar Hall: ห้องเรียนและห้องประชุม": "Scholar Hall: Classrooms and Meeting Rooms",
+  "โรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ: ห้องเรียนและห้องประชุม": "Scholar Hall: Classrooms and Meeting Rooms",
   "Booking · Classroom · Quest · Admin": "Booking · Classroom · Quest · Admin",
   "URL รูปห้อง": "Room Image URL",
   "XP ตอบแทน": "XP Reward",
@@ -107,7 +107,7 @@ const enDict: Record<string, string> = {
   "ดูแลผู้ใช้ ห้อง และคำขอจอง": "Manage users, rooms, and booking requests",
   ตรวจการจองห้องประชุม: "Review Meeting Room Bookings",
   "ตัวเลือก ${oi + 1}": "Option ${oi + 1}",
-  "ตำนานแห่ง Scholar Hall: ใครจะขึ้นแท่นสูงสุด?":
+  "ตำนานแห่งโรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ: ใครจะขึ้นแท่นสูงสุด?":
     "Legends of Scholar Hall: Who will reach the top?",
   ตำแหน่ง: "Rank",
   ติดตามความก้าวหน้าของนักเรียนแบบรายห้อง: "Track student progress by classroom",
@@ -164,7 +164,7 @@ const enDict: Record<string, string> = {
   "พิมพ์คำถาม...": "Type a question...",
   ภาพรวมความก้าวหน้าและกิจกรรมของคุณ: "Overview of your progress and activities",
   ภาพรวมระบบและการอนุมัติ: "System overview and approvals",
-  "ภาพรวม Scholar Hall": "Scholar Hall Overview",
+  "ภาพรวมโรงเรียนศึกษาสงเคราะห์จิตต์อารีฯ": "Scholar Hall Overview",
   ภาพรวมห้องเรียน: "Classroom Overview",
   ภาพรวมห้องเรียนและงานของคุณ: "Your classroom and assignment overview",
   ภาษา: "Language",
