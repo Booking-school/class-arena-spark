@@ -254,6 +254,9 @@ function ProfilePage() {
         </CardContent>
       </Card>
 
+      <PasswordChangeCard />
+
+
       <Card>
         <CardHeader>
           <CardTitle className="font-display flex items-center gap-2">
