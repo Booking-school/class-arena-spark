@@ -243,7 +243,19 @@ function ClassroomDetail() {
               <BookOpenCheck className="size-4" />
               {tr("ห้องเรียนที่เชื่อมบทเรียน งาน และเช็กชื่อ")}
             </div>
-            <h1 className="text-4xl font-semibold">{classroom.name}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-4xl font-semibold">{classroom.name}</h1>
+              {isOwner && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={openNameDialog}
+                  title={tr("แก้ไขชื่อห้อง")}
+                >
+                  <Pencil className="size-4" />
+                </Button>
+              )}
+            </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {classroom.subject && (
                 <Badge variant="secondary" className="font-semibold">
