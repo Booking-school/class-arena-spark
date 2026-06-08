@@ -184,6 +184,30 @@ function ClassroomDetail() {
     },
   });
 
+  const saveName = useMutation({
+    mutationFn: async () => {
+      const trimmed = nameValue.trim();
+      if (!trimmed) throw new Error(tr("ใส่ชื่อห้อง"));
+      const { error } = await supabase
+        .from("classrooms")
+        .update({ name: trimmed })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(tr("บันทึกชื่อห้องแล้ว"));
+      setNameOpen(false);
+      setNameError(null);
+      qcRoot.invalidateQueries({ queryKey: ["classroom", id] });
+      qcRoot.invalidateQueries({ queryKey: ["classrooms-owned"] });
+      qcRoot.invalidateQueries({ queryKey: ["classrooms-joined"] });
+    },
+    onError: (error: Error) => {
+      setNameError(error.message);
+      toast.error(error.message);
+    },
+  });
+
   const isOwner = classroom?.owner_id === user?.id;
 
   if (isLoading) return <div className="p-10 text-muted-foreground">{tr("กำลังโหลด…")}</div>;
@@ -199,6 +223,13 @@ function ClassroomDetail() {
     setGradeValue(classroom.grade_level ?? "");
     setGradeError(null);
     setGradeOpen(true);
+  }
+
+  function openNameDialog() {
+    if (!classroom) return;
+    setNameValue(classroom.name ?? "");
+    setNameError(null);
+    setNameOpen(true);
   }
 
   const gradeLevel = classroom.grade_level ?? null;
