@@ -357,3 +357,64 @@ function Stat({
     </div>
   );
 }
+
+function PasswordChangeCard() {
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function submit() {
+    if (pw.length < 6) {
+      toast.error(tr("รหัสผ่านต้องอย่างน้อย 6 ตัวอักษร"));
+      return;
+    }
+    if (pw !== pw2) {
+      toast.error(tr("รหัสผ่านไม่ตรงกัน"));
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: pw });
+    setSaving(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(tr("เปลี่ยนรหัสผ่านแล้ว"));
+      setPw("");
+      setPw2("");
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-display flex items-center gap-2">
+          🔒 {tr("เปลี่ยนรหัสผ่าน")}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 max-w-sm">
+        <div>
+          <Label htmlFor="new-pw">{tr("รหัสผ่านใหม่")}</Label>
+          <Input
+            id="new-pw"
+            type="password"
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
+            autoComplete="new-password"
+          />
+        </div>
+        <div>
+          <Label htmlFor="new-pw2">{tr("ยืนยันรหัสผ่านใหม่")}</Label>
+          <Input
+            id="new-pw2"
+            type="password"
+            value={pw2}
+            onChange={(e) => setPw2(e.target.value)}
+            autoComplete="new-password"
+          />
+        </div>
+        <Button onClick={submit} disabled={saving}>
+          {saving ? tr("กำลังบันทึก") : tr("บันทึกรหัสผ่านใหม่")}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
