@@ -136,6 +136,9 @@ function ClassroomDetail() {
   const [gradeOpen, setGradeOpen] = useState(false);
   const [gradeValue, setGradeValue] = useState("");
   const [gradeError, setGradeError] = useState<string | null>(null);
+  const [nameOpen, setNameOpen] = useState(false);
+  const [nameValue, setNameValue] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
 
   const { data: classroom, isLoading } = useQuery({
     queryKey: ["classroom", id],
