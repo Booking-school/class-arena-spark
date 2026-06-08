@@ -340,6 +340,43 @@ function ClassroomDetail() {
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={nameOpen}
+        onOpenChange={(next) => {
+          setNameOpen(next);
+          if (!next) setNameError(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tr("แก้ไขชื่อห้อง")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="classroom-name-edit">{tr("ชื่อห้อง")}</Label>
+            <Input
+              id="classroom-name-edit"
+              value={nameValue}
+              onChange={(event) => {
+                setNameValue(event.target.value);
+                setNameError(null);
+              }}
+              maxLength={120}
+              aria-invalid={!!nameError}
+            />
+            {nameError && <p className="text-sm text-destructive">{nameError}</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNameOpen(false)}>
+              {tr("ยกเลิก")}
+            </Button>
+            <Button onClick={() => saveName.mutate()} disabled={saveName.isPending}>
+              {saveName.isPending && <Loader2 className="size-4 animate-spin" />}
+              {saveName.isPending ? tr("กำลังบันทึก") : tr("บันทึก")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <ClassroomStartPanel
         isOwner={isOwner}
         gradeLevel={gradeLevel}
