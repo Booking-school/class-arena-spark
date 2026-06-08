@@ -136,6 +136,9 @@ function ClassroomDetail() {
   const [gradeOpen, setGradeOpen] = useState(false);
   const [gradeValue, setGradeValue] = useState("");
   const [gradeError, setGradeError] = useState<string | null>(null);
+  const [nameOpen, setNameOpen] = useState(false);
+  const [nameValue, setNameValue] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
 
   const { data: classroom, isLoading } = useQuery({
     queryKey: ["classroom", id],
@@ -181,6 +184,30 @@ function ClassroomDetail() {
     },
   });
 
+  const saveName = useMutation({
+    mutationFn: async () => {
+      const trimmed = nameValue.trim();
+      if (!trimmed) throw new Error(tr("ใส่ชื่อห้อง"));
+      const { error } = await supabase
+        .from("classrooms")
+        .update({ name: trimmed })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(tr("บันทึกชื่อห้องแล้ว"));
+      setNameOpen(false);
+      setNameError(null);
+      qcRoot.invalidateQueries({ queryKey: ["classroom", id] });
+      qcRoot.invalidateQueries({ queryKey: ["classrooms-owned"] });
+      qcRoot.invalidateQueries({ queryKey: ["classrooms-joined"] });
+    },
+    onError: (error: Error) => {
+      setNameError(error.message);
+      toast.error(error.message);
+    },
+  });
+
   const isOwner = classroom?.owner_id === user?.id;
 
   if (isLoading) return <div className="p-10 text-muted-foreground">{tr("กำลังโหลด…")}</div>;
@@ -198,6 +225,13 @@ function ClassroomDetail() {
     setGradeOpen(true);
   }
 
+  function openNameDialog() {
+    if (!classroom) return;
+    setNameValue(classroom.name ?? "");
+    setNameError(null);
+    setNameOpen(true);
+  }
+
   const gradeLevel = classroom.grade_level ?? null;
 
   return (
@@ -209,7 +243,19 @@ function ClassroomDetail() {
               <BookOpenCheck className="size-4" />
               {tr("ห้องเรียนที่เชื่อมบทเรียน งาน และเช็กชื่อ")}
             </div>
-            <h1 className="text-4xl font-semibold">{classroom.name}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-4xl font-semibold">{classroom.name}</h1>
+              {isOwner && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={openNameDialog}
+                  title={tr("แก้ไขชื่อห้อง")}
+                >
+                  <Pencil className="size-4" />
+                </Button>
+              )}
+            </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {classroom.subject && (
                 <Badge variant="secondary" className="font-semibold">
@@ -289,6 +335,43 @@ function ClassroomDetail() {
             <Button onClick={() => saveGrade.mutate()} disabled={saveGrade.isPending}>
               {saveGrade.isPending && <Loader2 className="size-4 animate-spin" />}
               {saveGrade.isPending ? tr("กำลังบันทึก") : tr("บันทึก")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={nameOpen}
+        onOpenChange={(next) => {
+          setNameOpen(next);
+          if (!next) setNameError(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tr("แก้ไขชื่อห้อง")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="classroom-name-edit">{tr("ชื่อห้อง")}</Label>
+            <Input
+              id="classroom-name-edit"
+              value={nameValue}
+              onChange={(event) => {
+                setNameValue(event.target.value);
+                setNameError(null);
+              }}
+              maxLength={120}
+              aria-invalid={!!nameError}
+            />
+            {nameError && <p className="text-sm text-destructive">{nameError}</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNameOpen(false)}>
+              {tr("ยกเลิก")}
+            </Button>
+            <Button onClick={() => saveName.mutate()} disabled={saveName.isPending}>
+              {saveName.isPending && <Loader2 className="size-4 animate-spin" />}
+              {saveName.isPending ? tr("กำลังบันทึก") : tr("บันทึก")}
             </Button>
           </DialogFooter>
         </DialogContent>
