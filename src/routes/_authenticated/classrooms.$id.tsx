@@ -72,6 +72,8 @@ import {
   Pin,
   Trophy,
   Pencil,
+  Folder,
+  ArrowLeft,
 } from "lucide-react";
 import { AssignmentComments } from "@/components/assignment-comments";
 import { QuestCard, StudentQuestQuestions } from "./quests";
