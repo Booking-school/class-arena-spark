@@ -881,6 +881,60 @@ function MaterialsTab({
           </Dialog>
         )}
       </div>
+      {isFolderView ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <button
+            type="button"
+            onClick={() => setFilter("_all")}
+            className="text-left rounded-lg border bg-card hover:bg-accent transition-colors p-4 flex items-start gap-3"
+          >
+            <Folder className="size-8 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="font-medium truncate">{tr("ทั้งหมด")}</p>
+              <p className="text-xs text-muted-foreground">
+                {allMaterials.length} {tr("รายการ")}
+              </p>
+            </div>
+          </button>
+          {(lessons ?? []).map((l) => {
+            const c = countByLesson.get(l.id) ?? 0;
+            return (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => setFilter(l.id)}
+                className="text-left rounded-lg border bg-card hover:bg-accent transition-colors p-4 flex items-start gap-3"
+              >
+                <Folder className="size-8 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{l.topic}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(l.lesson_date).toLocaleDateString("th-TH")} · {c} {tr("รายการ")}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+          {unassignedCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setFilter("none")}
+              className="text-left rounded-lg border bg-card hover:bg-accent transition-colors p-4 flex items-start gap-3"
+            >
+              <Folder className="size-8 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <p className="font-medium truncate">{tr("ยังไม่ได้จัดบทเรียน")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {unassignedCount} {tr("รายการ")}
+                </p>
+              </div>
+            </button>
+          )}
+          {(lessons ?? []).length === 0 && unassignedCount === 0 && (
+            <p className="text-muted-foreground text-sm col-span-full">{tr("ยังไม่มีเอกสาร")}</p>
+          )}
+        </div>
+      ) : (
       <div className="grid gap-3">
         {filtered.length === 0 && (
           <p className="text-muted-foreground text-sm">{tr("ยังไม่มีเอกสาร")}</p>
