@@ -647,11 +647,23 @@ function MaterialsTab({
   });
 
   const lessonMap = new Map((lessons ?? []).map((l) => [l.id, l]));
-  const filtered = (data ?? []).filter((m) => {
-    if (filter === "all") return true;
+  const allMaterials = data ?? [];
+  const filtered = allMaterials.filter((m) => {
+    if (filter === "_all") return true;
     if (filter === "none") return !m.lesson_id;
     return m.lesson_id === filter;
   });
+  // counts per lesson for folder view
+  const countByLesson = new Map<string, number>();
+  let unassignedCount = 0;
+  for (const m of allMaterials) {
+    if (m.lesson_id) countByLesson.set(m.lesson_id, (countByLesson.get(m.lesson_id) ?? 0) + 1);
+    else unassignedCount += 1;
+  }
+  const isFolderView = filter === "all";
+  const currentLesson = filter !== "all" && filter !== "_all" && filter !== "none"
+    ? lessonMap.get(filter)
+    : null;
 
   const add = useMutation({
     mutationFn: async () => {
