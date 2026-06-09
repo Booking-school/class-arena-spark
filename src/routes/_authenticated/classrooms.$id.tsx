@@ -787,23 +787,21 @@ function MaterialsTab({
   return (
     <div className="space-y-4 mt-4">
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Label className="text-sm shrink-0">{tr("เลือกบทเรียน")}</Label>
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[260px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{tr("ทั้งหมด")}</SelectItem>
-              <SelectItem value="none">{tr("ยังไม่ได้จัดบทเรียน")}</SelectItem>
-              {lessons?.map((l) => (
-                <SelectItem key={l.id} value={l.id}>
-                  {l.topic} · {new Date(l.lesson_date).toLocaleDateString("th-TH")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {!isFolderView && (
+          <Button variant="outline" size="sm" onClick={() => setFilter("all")}>
+            <ArrowLeft className="size-4 mr-1" />
+            {tr("กลับไปเลือกบทเรียน")}
+          </Button>
+        )}
+        {!isFolderView && (
+          <div className="text-sm font-medium">
+            {currentLesson
+              ? `${currentLesson.topic} · ${new Date(currentLesson.lesson_date).toLocaleDateString("th-TH")}`
+              : filter === "none"
+                ? tr("ยังไม่ได้จัดบทเรียน")
+                : tr("ทั้งหมด")}
+          </div>
+        )}
         {isOwner && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
