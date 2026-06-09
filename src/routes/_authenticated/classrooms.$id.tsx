@@ -1017,6 +1017,7 @@ function MaterialsTab({
           );
         })}
       </div>
+      )}
 
       {/* Edit dialog */}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
