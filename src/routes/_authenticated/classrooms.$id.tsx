@@ -72,6 +72,8 @@ import {
   Pin,
   Trophy,
   Pencil,
+  Folder,
+  ArrowLeft,
 } from "lucide-react";
 import { AssignmentComments } from "@/components/assignment-comments";
 import { QuestCard, StudentQuestQuestions } from "./quests";
@@ -645,11 +647,23 @@ function MaterialsTab({
   });
 
   const lessonMap = new Map((lessons ?? []).map((l) => [l.id, l]));
-  const filtered = (data ?? []).filter((m) => {
-    if (filter === "all") return true;
+  const allMaterials = data ?? [];
+  const filtered = allMaterials.filter((m) => {
+    if (filter === "_all") return true;
     if (filter === "none") return !m.lesson_id;
     return m.lesson_id === filter;
   });
+  // counts per lesson for folder view
+  const countByLesson = new Map<string, number>();
+  let unassignedCount = 0;
+  for (const m of allMaterials) {
+    if (m.lesson_id) countByLesson.set(m.lesson_id, (countByLesson.get(m.lesson_id) ?? 0) + 1);
+    else unassignedCount += 1;
+  }
+  const isFolderView = filter === "all";
+  const currentLesson = filter !== "all" && filter !== "_all" && filter !== "none"
+    ? lessonMap.get(filter)
+    : null;
 
   const add = useMutation({
     mutationFn: async () => {
@@ -773,23 +787,21 @@ function MaterialsTab({
   return (
     <div className="space-y-4 mt-4">
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Label className="text-sm shrink-0">{tr("เลือกบทเรียน")}</Label>
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[260px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{tr("ทั้งหมด")}</SelectItem>
-              <SelectItem value="none">{tr("ยังไม่ได้จัดบทเรียน")}</SelectItem>
-              {lessons?.map((l) => (
-                <SelectItem key={l.id} value={l.id}>
-                  {l.topic} · {new Date(l.lesson_date).toLocaleDateString("th-TH")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {!isFolderView && (
+          <Button variant="outline" size="sm" onClick={() => setFilter("all")}>
+            <ArrowLeft className="size-4 mr-1" />
+            {tr("กลับไปเลือกบทเรียน")}
+          </Button>
+        )}
+        {!isFolderView && (
+          <div className="text-sm font-medium">
+            {currentLesson
+              ? `${currentLesson.topic} · ${new Date(currentLesson.lesson_date).toLocaleDateString("th-TH")}`
+              : filter === "none"
+                ? tr("ยังไม่ได้จัดบทเรียน")
+                : tr("ทั้งหมด")}
+          </div>
+        )}
         {isOwner && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -869,6 +881,60 @@ function MaterialsTab({
           </Dialog>
         )}
       </div>
+      {isFolderView ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <button
+            type="button"
+            onClick={() => setFilter("_all")}
+            className="text-left rounded-lg border bg-card hover:bg-accent transition-colors p-4 flex items-start gap-3"
+          >
+            <Folder className="size-8 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="font-medium truncate">{tr("ทั้งหมด")}</p>
+              <p className="text-xs text-muted-foreground">
+                {allMaterials.length} {tr("รายการ")}
+              </p>
+            </div>
+          </button>
+          {(lessons ?? []).map((l) => {
+            const c = countByLesson.get(l.id) ?? 0;
+            return (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => setFilter(l.id)}
+                className="text-left rounded-lg border bg-card hover:bg-accent transition-colors p-4 flex items-start gap-3"
+              >
+                <Folder className="size-8 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{l.topic}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(l.lesson_date).toLocaleDateString("th-TH")} · {c} {tr("รายการ")}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+          {unassignedCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setFilter("none")}
+              className="text-left rounded-lg border bg-card hover:bg-accent transition-colors p-4 flex items-start gap-3"
+            >
+              <Folder className="size-8 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <p className="font-medium truncate">{tr("ยังไม่ได้จัดบทเรียน")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {unassignedCount} {tr("รายการ")}
+                </p>
+              </div>
+            </button>
+          )}
+          {(lessons ?? []).length === 0 && unassignedCount === 0 && (
+            <p className="text-muted-foreground text-sm col-span-full">{tr("ยังไม่มีเอกสาร")}</p>
+          )}
+        </div>
+      ) : (
       <div className="grid gap-3">
         {filtered.length === 0 && (
           <p className="text-muted-foreground text-sm">{tr("ยังไม่มีเอกสาร")}</p>
@@ -951,6 +1017,7 @@ function MaterialsTab({
           );
         })}
       </div>
+      )}
 
       {/* Edit dialog */}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
