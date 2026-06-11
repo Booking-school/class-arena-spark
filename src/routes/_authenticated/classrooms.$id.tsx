@@ -667,6 +667,21 @@ function MaterialsTab({
   const currentLesson = filter !== "all" && filter !== "_all" && filter !== "none"
     ? lessonMap.get(filter)
     : null;
+  const sortedLessons = [...(lessons ?? [])].sort((a, b) => {
+    switch (lessonSort) {
+      case "date-asc":
+        return a.lesson_date.localeCompare(b.lesson_date);
+      case "name-asc":
+        return a.topic.localeCompare(b.topic, "th");
+      case "name-desc":
+        return b.topic.localeCompare(a.topic, "th");
+      case "count-desc":
+        return (countByLesson.get(b.id) ?? 0) - (countByLesson.get(a.id) ?? 0);
+      case "date-desc":
+      default:
+        return b.lesson_date.localeCompare(a.lesson_date);
+    }
+  });
 
   const add = useMutation({
     mutationFn: async () => {
