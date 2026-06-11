@@ -584,7 +584,7 @@ function MaterialsTab({
     url: string;
     lesson_id: string;
   }>({ title: "", description: "", url: "", lesson_id: "none" });
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
 
   // edit + copy state
