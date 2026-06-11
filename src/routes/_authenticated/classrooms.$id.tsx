@@ -598,6 +598,9 @@ function MaterialsTab({
   const [copying, setCopying] = useState<MaterialRow | null>(null);
   const [copyRoom, setCopyRoom] = useState<string>("");
   const [copyLesson, setCopyLesson] = useState<string>("none");
+  const [lessonSort, setLessonSort] = useState<
+    "date-desc" | "date-asc" | "name-asc" | "name-desc" | "count-desc"
+  >("date-desc");
 
   const { data: lessons } = useQuery({
     queryKey: ["lessons-list", classroomId],
