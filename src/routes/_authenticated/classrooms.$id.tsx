@@ -707,7 +707,7 @@ function MaterialsTab({
       if (files.length > 0) {
         setUploading(true);
         for (const f of files) {
-          const path = `${user!.id}/materials/${classroomId}/${Date.now()}-${f.name}`;
+          const path = `${user!.id}/materials/${classroomId}/${Date.now()}-${sanitizeFileName(f.name)}`;
           const { error: ue } = await supabase.storage.from("uploads").upload(path, f);
           if (ue) throw ue;
           const { data: signed } = await supabase.storage
@@ -1314,7 +1314,7 @@ function AssignmentsTab({
         setUploadingAttachments(true);
         try {
           for (const f of attachmentFiles) {
-            const path = `${user!.id}/assignments/${Date.now()}-${f.name}`;
+            const path = `${user!.id}/assignments/${Date.now()}-${sanitizeFileName(f.name)}`;
             const { error: ue } = await supabase.storage.from("uploads").upload(path, f);
             if (ue) throw ue;
             const { data: signed } = await supabase.storage
@@ -1377,7 +1377,7 @@ function AssignmentsTab({
         setEditUploading(true);
         try {
           for (const f of editNewAttachmentFiles) {
-            const path = `${user!.id}/assignments/${Date.now()}-${f.name}`;
+            const path = `${user!.id}/assignments/${Date.now()}-${sanitizeFileName(f.name)}`;
             const { error: ue } = await supabase.storage.from("uploads").upload(path, f);
             if (ue) throw ue;
             const { data: signed } = await supabase.storage
@@ -1431,7 +1431,7 @@ function AssignmentsTab({
       if (isLate && !assignment.allow_late) throw new Error(tr("เลยกำหนดส่งและไม่อนุญาตส่งช้า"));
       let file_url: string | null = null;
       if (subFile) {
-        const path = `${user!.id}/${assignmentId}/${Date.now()}-${subFile.name}`;
+        const path = `${user!.id}/${assignmentId}/${Date.now()}-${sanitizeFileName(subFile.name)}`;
         const { error: ue } = await supabase.storage.from("uploads").upload(path, subFile);
         if (ue) throw ue;
         const { data: signed } = await supabase.storage
