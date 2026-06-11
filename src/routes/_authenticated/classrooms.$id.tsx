@@ -904,20 +904,31 @@ function MaterialsTab({
                   </Select>
                 </div>
                 <div>
-                  <Label>{tr("ลิงก์ (URL)")}</Label>
-                  <Input
+                  <Label>{tr("ลิงก์ (URL) — ใส่ได้หลายลิงก์ บรรทัดละ 1")}</Label>
+                  <Textarea
                     value={form.url}
                     onChange={(e) => setForm({ ...form, url: e.target.value })}
-                    placeholder="https://..."
-                    disabled={!!file}
+                    placeholder={"https://...\nhttps://..."}
+                    rows={3}
                   />
                 </div>
                 <div>
-                  <Label>{tr("หรืออัปโหลดไฟล์")}</Label>
-                  <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-                  {file && (
-                    <p className="text-xs text-muted-foreground mt-1">เลือกแล้ว: {file.name}</p>
+                  <Label>{tr("หรืออัปโหลดไฟล์ (เลือกได้หลายไฟล์)")}</Label>
+                  <Input
+                    type="file"
+                    multiple
+                    onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+                  />
+                  {files.length > 0 && (
+                    <ul className="text-xs text-muted-foreground mt-1 list-disc pl-5">
+                      {files.map((f, i) => (
+                        <li key={i}>{f.name}</li>
+                      ))}
+                    </ul>
                   )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {tr("ระบบจะสร้าง 1 รายการเอกสารต่อ 1 ไฟล์/ลิงก์")}
+                  </p>
                 </div>
               </div>
               <DialogFooter>
