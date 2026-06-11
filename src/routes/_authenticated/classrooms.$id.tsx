@@ -811,6 +811,20 @@ function MaterialsTab({
             {tr("กลับไปเลือกบทเรียน")}
           </Button>
         )}
+        {isFolderView && (lessons?.length ?? 0) > 0 && (
+          <Select value={lessonSort} onValueChange={(v) => setLessonSort(v as typeof lessonSort)}>
+            <SelectTrigger className="h-9 w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-desc">{tr("วันที่: ใหม่ → เก่า")}</SelectItem>
+              <SelectItem value="date-asc">{tr("วันที่: เก่า → ใหม่")}</SelectItem>
+              <SelectItem value="name-asc">{tr("ชื่อบท: ก → ฮ")}</SelectItem>
+              <SelectItem value="name-desc">{tr("ชื่อบท: ฮ → ก")}</SelectItem>
+              <SelectItem value="count-desc">{tr("จำนวนเอกสารมากสุด")}</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
         {!isFolderView && (
           <div className="text-sm font-medium">
             {currentLesson
