@@ -928,7 +928,7 @@ function MaterialsTab({
               </p>
             </div>
           </button>
-          {(lessons ?? []).map((l) => {
+          {sortedLessons.map((l) => {
             const c = countByLesson.get(l.id) ?? 0;
             return (
               <button
