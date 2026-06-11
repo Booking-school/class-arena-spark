@@ -608,9 +608,19 @@ function MaterialsTab({
       const { data, error } = await supabase
         .from("lesson_contents")
         .select("id, topic, lesson_date")
-        .eq("classroom_id", classroomId)
-        .order("lesson_date", { ascending: false });
+        .eq("classroom_id", classroomId);
       if (error) throw error;
+      const rows = data ?? [];
+      const chapterNum = (t: string) => {
+        const m = t.match(/บทที่\s*(\d+)/);
+        return m ? parseInt(m[1], 10) : Number.POSITIVE_INFINITY;
+      };
+      return [...rows].sort((a, b) => {
+        const ca = chapterNum(a.topic);
+        const cb = chapterNum(b.topic);
+        if (ca !== cb) return ca - cb;
+        return a.lesson_date.localeCompare(b.lesson_date);
+      });
       return data ?? [];
     },
   });
