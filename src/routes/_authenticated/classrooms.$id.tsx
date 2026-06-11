@@ -598,6 +598,9 @@ function MaterialsTab({
   const [copying, setCopying] = useState<MaterialRow | null>(null);
   const [copyRoom, setCopyRoom] = useState<string>("");
   const [copyLesson, setCopyLesson] = useState<string>("none");
+  const [lessonSort, setLessonSort] = useState<
+    "date-desc" | "date-asc" | "name-asc" | "name-desc" | "count-desc"
+  >("date-desc");
 
   const { data: lessons } = useQuery({
     queryKey: ["lessons-list", classroomId],
@@ -664,6 +667,21 @@ function MaterialsTab({
   const currentLesson = filter !== "all" && filter !== "_all" && filter !== "none"
     ? lessonMap.get(filter)
     : null;
+  const sortedLessons = [...(lessons ?? [])].sort((a, b) => {
+    switch (lessonSort) {
+      case "date-asc":
+        return a.lesson_date.localeCompare(b.lesson_date);
+      case "name-asc":
+        return a.topic.localeCompare(b.topic, "th");
+      case "name-desc":
+        return b.topic.localeCompare(a.topic, "th");
+      case "count-desc":
+        return (countByLesson.get(b.id) ?? 0) - (countByLesson.get(a.id) ?? 0);
+      case "date-desc":
+      default:
+        return b.lesson_date.localeCompare(a.lesson_date);
+    }
+  });
 
   const add = useMutation({
     mutationFn: async () => {
@@ -793,6 +811,20 @@ function MaterialsTab({
             {tr("กลับไปเลือกบทเรียน")}
           </Button>
         )}
+        {isFolderView && (lessons?.length ?? 0) > 0 && (
+          <Select value={lessonSort} onValueChange={(v) => setLessonSort(v as typeof lessonSort)}>
+            <SelectTrigger className="h-9 w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-desc">{tr("วันที่: ใหม่ → เก่า")}</SelectItem>
+              <SelectItem value="date-asc">{tr("วันที่: เก่า → ใหม่")}</SelectItem>
+              <SelectItem value="name-asc">{tr("ชื่อบท: ก → ฮ")}</SelectItem>
+              <SelectItem value="name-desc">{tr("ชื่อบท: ฮ → ก")}</SelectItem>
+              <SelectItem value="count-desc">{tr("จำนวนเอกสารมากสุด")}</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
         {!isFolderView && (
           <div className="text-sm font-medium">
             {currentLesson
@@ -896,7 +928,7 @@ function MaterialsTab({
               </p>
             </div>
           </button>
-          {(lessons ?? []).map((l) => {
+          {sortedLessons.map((l) => {
             const c = countByLesson.get(l.id) ?? 0;
             return (
               <button
