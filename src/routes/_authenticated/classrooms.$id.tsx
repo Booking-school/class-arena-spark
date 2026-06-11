@@ -584,7 +584,7 @@ function MaterialsTab({
     url: string;
     lesson_id: string;
   }>({ title: "", description: "", url: "", lesson_id: "none" });
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
 
   // edit + copy state
@@ -696,32 +696,45 @@ function MaterialsTab({
   const add = useMutation({
     mutationFn: async () => {
       if (!form.title) throw new Error(tr("ใส่ชื่อเอกสาร"));
-      if (!form.url && !file) throw new Error(tr("ใส่ลิงก์หรือเลือกไฟล์อย่างน้อย 1 อย่าง"));
-      let url = form.url;
-      if (file) {
+      const urlLines = form.url
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (urlLines.length === 0 && files.length === 0)
+        throw new Error(tr("ใส่ลิงก์หรือเลือกไฟล์อย่างน้อย 1 อย่าง"));
+
+      const urls: { url: string; label?: string }[] = [];
+      if (files.length > 0) {
         setUploading(true);
-        const path = `${user!.id}/materials/${classroomId}/${Date.now()}-${file.name}`;
-        const { error: ue } = await supabase.storage.from("uploads").upload(path, file);
-        if (ue) throw ue;
-        const { data: signed } = await supabase.storage
-          .from("uploads")
-          .createSignedUrl(path, 60 * 60 * 24 * 365);
-        url = signed?.signedUrl ?? "";
+        for (const f of files) {
+          const path = `${user!.id}/materials/${classroomId}/${Date.now()}-${f.name}`;
+          const { error: ue } = await supabase.storage.from("uploads").upload(path, f);
+          if (ue) throw ue;
+          const { data: signed } = await supabase.storage
+            .from("uploads")
+            .createSignedUrl(path, 60 * 60 * 24 * 365);
+          urls.push({ url: signed?.signedUrl ?? "", label: f.name });
+        }
       }
-      const { error } = await supabase.from("materials").insert({
+      for (const u of urlLines) urls.push({ url: u });
+
+      const lesson_id = form.lesson_id === "none" ? null : form.lesson_id;
+      const multi = urls.length > 1;
+      const rows = urls.map((u, i) => ({
         classroom_id: classroomId,
-        title: form.title,
+        title: multi ? `${form.title} (${i + 1}/${urls.length}${u.label ? ` · ${u.label}` : ""})` : form.title,
         description: form.description,
-        url,
-        lesson_id: form.lesson_id === "none" ? null : form.lesson_id,
-      });
+        url: u.url,
+        lesson_id,
+      }));
+      const { error } = await supabase.from("materials").insert(rows);
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(tr("เพิ่มแล้ว"));
       setOpen(false);
       setForm({ title: "", description: "", url: "", lesson_id: "none" });
-      setFile(null);
+      setFiles([]);
       qc.invalidateQueries({ queryKey: ["materials", classroomId] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -891,20 +904,31 @@ function MaterialsTab({
                   </Select>
                 </div>
                 <div>
-                  <Label>{tr("ลิงก์ (URL)")}</Label>
-                  <Input
+                  <Label>{tr("ลิงก์ (URL) — ใส่ได้หลายลิงก์ บรรทัดละ 1")}</Label>
+                  <Textarea
                     value={form.url}
                     onChange={(e) => setForm({ ...form, url: e.target.value })}
-                    placeholder="https://..."
-                    disabled={!!file}
+                    placeholder={"https://...\nhttps://..."}
+                    rows={3}
                   />
                 </div>
                 <div>
-                  <Label>{tr("หรืออัปโหลดไฟล์")}</Label>
-                  <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-                  {file && (
-                    <p className="text-xs text-muted-foreground mt-1">เลือกแล้ว: {file.name}</p>
+                  <Label>{tr("หรืออัปโหลดไฟล์ (เลือกได้หลายไฟล์)")}</Label>
+                  <Input
+                    type="file"
+                    multiple
+                    onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+                  />
+                  {files.length > 0 && (
+                    <ul className="text-xs text-muted-foreground mt-1 list-disc pl-5">
+                      {files.map((f, i) => (
+                        <li key={i}>{f.name}</li>
+                      ))}
+                    </ul>
                   )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {tr("ระบบจะสร้าง 1 รายการเอกสารต่อ 1 ไฟล์/ลิงก์")}
+                  </p>
                 </div>
               </div>
               <DialogFooter>
