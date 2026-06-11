@@ -87,6 +87,23 @@ type TableRow<T extends keyof Database["public"]["Tables"]> =
 type ViewRow<T extends keyof Database["public"]["Views"]> = Database["public"]["Views"][T]["Row"];
 
 type MaterialRow = TableRow<"materials">;
+
+// Supabase Storage keys only allow a limited ASCII set. Strip everything else
+// (Thai/Chinese/spaces/etc.) so uploads don't fail with "Invalid key".
+function sanitizeFileName(name: string): string {
+  const dot = name.lastIndexOf(".");
+  const base = dot > 0 ? name.slice(0, dot) : name;
+  const ext = dot > 0 ? name.slice(dot) : "";
+  const clean = (s: string) =>
+    s
+      .normalize("NFKD")
+      .replace(/[^\w.\-]+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  const safeBase = clean(base) || "file";
+  const safeExt = clean(ext);
+  return safeExt ? `${safeBase}.${safeExt.replace(/^\.+/, "")}` : safeBase;
+}
 type LessonRow = TableRow<"lesson_contents">;
 type AnnouncementRow = TableRow<"announcements"> & {
   profiles?: { display_name: string | null } | null;
