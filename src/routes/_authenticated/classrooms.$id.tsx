@@ -1796,43 +1796,7 @@ function AssignmentsTab({
                     />
                   ) : (
                     <div>
-                      {mine ? (
-                        <div className="text-sm space-y-1">
-                          <div className="flex gap-1 flex-wrap">
-                            <Badge className="bg-green-100 text-green-900">
-                              {mine.user_id === user?.id ? tr("ส่งแล้ว") : tr("ส่งโดยกลุ่ม")}
-                            </Badge>
-                            {mine.is_late && <Badge variant="destructive">{tr("ส่งช้า")}</Badge>}
-                          </div>
-                          {mine.user_id !== user?.id && (
-                            <GroupSubmittedBy submitterId={mine.user_id} />
-                          )}
-                          {Array.isArray(mine.group_member_ids) &&
-                            mine.group_member_ids.length > 0 &&
-                            mine.user_id === user?.id && (
-                              <p className="text-xs text-muted-foreground">
-                                {tr("สมาชิกกลุ่ม:")} {mine.group_member_ids.length} {tr("คน")}
-                              </p>
-                            )}
-                          {mine.score != null && (
-                            <p>
-                              {tr("คะแนน:")}
-                              <span className="font-semibold">
-                                {mine.score}/{a.max_score}
-                              </span>
-                            </p>
-                          )}
-                          {mine.feedback && (
-                            <p className="text-muted-foreground">ความคิดเห็น: {mine.feedback}</p>
-                          )}
-                        </div>
-                      ) : a.status === "closed" ? (
-                        <p className="text-sm text-muted-foreground">{tr("งานนี้ปิดรับแล้ว")}</p>
-                      ) : isOverdue && !a.allow_late ? (
-                        <p className="text-sm text-destructive">
-                          {tr("เลยกำหนดส่งและไม่อนุญาตส่งช้า")}
-                        </p>
-                      ) : submitFor === a.id ? (
+                      {submitFor === a.id ? (
                         <div className="space-y-2">
                           {a.assignment_type === "group" && (
                             <div className="rounded-md border bg-muted/30 p-3 space-y-2">
@@ -1882,6 +1846,20 @@ function AssignmentsTab({
                             value={subContent}
                             onChange={(e) => setSubContent(e.target.value)}
                           />
+                          {mine?.file_url && !subFile && (
+                            <p className="text-xs text-muted-foreground">
+                              {tr("ไฟล์ปัจจุบัน:")}{" "}
+                              <a
+                                href={mine.file_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-primary underline"
+                              >
+                                {tr("ดูไฟล์")}
+                              </a>{" "}
+                              • {tr("เลือกไฟล์ใหม่เพื่อแทนที่")}
+                            </p>
+                          )}
                           <Input
                             type="file"
                             onChange={(e) => setSubFile(e.target.files?.[0] ?? null)}
@@ -1893,13 +1871,15 @@ function AssignmentsTab({
                               disabled={submit.isPending}
                             >
                               <Upload className="size-4 mr-1" />
-                              {tr("ส่ง")}
+                              {mine ? tr("บันทึกการแก้ไข") : tr("ส่ง")}
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => {
                                 setSubmitFor(null);
+                                setSubContent("");
+                                setSubFile(null);
                                 setGroupMemberIds([]);
                               }}
                             >
@@ -1907,11 +1887,89 @@ function AssignmentsTab({
                             </Button>
                           </div>
                         </div>
+                      ) : mine ? (
+                        <div className="text-sm space-y-1">
+                          <div className="flex gap-1 flex-wrap">
+                            <Badge className="bg-green-100 text-green-900">
+                              {mine.user_id === user?.id ? tr("ส่งแล้ว") : tr("ส่งโดยกลุ่ม")}
+                            </Badge>
+                            {mine.is_late && <Badge variant="destructive">{tr("ส่งช้า")}</Badge>}
+                          </div>
+                          {mine.user_id !== user?.id && (
+                            <GroupSubmittedBy submitterId={mine.user_id} />
+                          )}
+                          {Array.isArray(mine.group_member_ids) &&
+                            mine.group_member_ids.length > 0 &&
+                            mine.user_id === user?.id && (
+                              <p className="text-xs text-muted-foreground">
+                                {tr("สมาชิกกลุ่ม:")} {mine.group_member_ids.length} {tr("คน")}
+                              </p>
+                            )}
+                          {mine.content && (
+                            <p className="whitespace-pre-wrap leading-relaxed">{mine.content}</p>
+                          )}
+                          {mine.file_url && (
+                            <a
+                              href={mine.file_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-primary underline"
+                            >
+                              {tr("ดูไฟล์ที่ส่ง")}
+                            </a>
+                          )}
+                          {mine.score != null && (
+                            <p>
+                              {tr("คะแนน:")}
+                              <span className="font-semibold">
+                                {mine.score}/{a.max_score}
+                              </span>
+                            </p>
+                          )}
+                          {mine.feedback && (
+                            <p className="text-muted-foreground">ความคิดเห็น: {mine.feedback}</p>
+                          )}
+                          {mine.user_id === user?.id &&
+                            mine.score == null &&
+                            a.status !== "closed" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="mt-2"
+                                onClick={() => {
+                                  setSubmitFor(a.id);
+                                  setSubContent(mine.content ?? "");
+                                  setSubFile(null);
+                                  setGroupMemberIds(
+                                    Array.isArray(mine.group_member_ids)
+                                      ? (mine.group_member_ids as string[])
+                                      : [],
+                                  );
+                                }}
+                              >
+                                <Pencil className="size-3 mr-1" />
+                                {tr("แก้ไขการส่ง")}
+                              </Button>
+                            )}
+                          {mine.user_id === user?.id && mine.score != null && (
+                            <p className="text-xs text-muted-foreground italic mt-1">
+                              {tr("งานนี้ถูกตรวจแล้ว ไม่สามารถแก้ไขได้")}
+                            </p>
+                          )}
+                        </div>
+                      ) : a.status === "closed" ? (
+                        <p className="text-sm text-muted-foreground">{tr("งานนี้ปิดรับแล้ว")}</p>
+                      ) : isOverdue && !a.allow_late ? (
+                        <p className="text-sm text-destructive">
+                          {tr("เลยกำหนดส่งและไม่อนุญาตส่งช้า")}
+                        </p>
                       ) : (
                         <Button
                           size="sm"
                           onClick={() => {
                             setSubmitFor(a.id);
+                            setSubContent("");
+                            setSubFile(null);
                             setGroupMemberIds([]);
                           }}
                         >
