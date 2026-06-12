@@ -1446,7 +1446,10 @@ function AssignmentsTab({
       const now = new Date();
       const isLate = assignment.due_date ? now > new Date(assignment.due_date) : false;
       if (isLate && !assignment.allow_late) throw new Error(tr("เลยกำหนดส่งและไม่อนุญาตส่งช้า"));
-      let file_url: string | null = null;
+      const existing = mySubs?.find(
+        (s) => s.assignment_id === assignmentId && s.user_id === user!.id,
+      );
+      let file_url: string | null = existing?.file_url ?? null;
       if (subFile) {
         const path = `${user!.id}/${assignmentId}/${Date.now()}-${sanitizeFileName(subFile.name)}`;
         const { error: ue } = await supabase.storage.from("uploads").upload(path, subFile);
