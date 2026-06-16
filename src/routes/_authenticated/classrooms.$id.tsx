@@ -77,6 +77,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { AssignmentComments } from "@/components/assignment-comments";
+import { CanvaTab } from "@/components/canva-tab";
 import { QuestCard, StudentQuestQuestions } from "./quests";
 
 export const Route = createFileRoute("/_authenticated/classrooms/$id")({
