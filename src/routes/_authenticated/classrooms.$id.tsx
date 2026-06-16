@@ -431,6 +431,10 @@ function ClassroomDetail() {
             <Calendar className="size-4 mr-1" />
             {tr("เช็กชื่อ")}
           </TabsTrigger>
+          <TabsTrigger value="canva">
+            <FileText className="size-4 mr-1" />
+            Canva
+          </TabsTrigger>
           <TabsTrigger value="leaderboard">
             <Trophy className="size-4 mr-1" />
             {tr("Leaderboard")}
@@ -459,6 +463,9 @@ function ClassroomDetail() {
         </TabsContent>
         <TabsContent value="attendance">
           <AttendanceTab classroomId={id} isOwner={isOwner} />
+        </TabsContent>
+        <TabsContent value="canva">
+          <CanvaTab classroomId={id} isOwner={isOwner} />
         </TabsContent>
         <TabsContent value="leaderboard">
           <LeaderboardTab classroomId={id} isOwner={isOwner} />
