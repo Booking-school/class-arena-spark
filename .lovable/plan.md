@@ -1,27 +1,51 @@
-## ทำไมเปิดไม่ได้
 
-หน้า preview เปิดได้ แต่ `class-arena-spark.lovable.app` (เว็บ published) ขึ้น "เกิดข้อผิดพลาด" เพราะ JS bundle ที่ deploy อยู่ตอนนี้ throw error:
+# Canva Links รายบุคคลในห้องเรียน
 
+## ปัญหา
+ครูใช้ Canva สอน แต่ถ้าแชร์ลิงก์เดียวให้ทั้งห้อง เด็กไปลบงานเพื่อนได้ ต้องการให้แต่ละคนมีลิงก์ของตัวเอง กดจากในห้องเรียนแล้วเข้า Canva ได้เลย (ไม่ต้องล็อกอินอีเมล Canva)
+
+## วิธีใช้งาน (สำหรับครู)
+1. ใน Canva: สร้างไฟล์/template แล้ว **Duplicate** เป็นชุดเท่าจำนวนนักเรียน (หรือใช้ Canva for Education "Share with class" จะ duplicate ให้อัตโนมัติก็ได้)
+2. ตั้ง share permission แต่ละไฟล์เป็น **"Anyone with the link — can edit"**
+3. มาที่ห้องเรียนในเว็บ → แท็บใหม่ **"Canva Links"** → กด **"เพิ่มชุดลิงก์"**
+   - ตั้งชื่อกิจกรรม เช่น "ใบงานบทที่ 3"
+   - วางลิงก์ Canva ทีละแถว พร้อมเลือกชื่อนักเรียนจาก dropdown (หรือกด **"Bulk paste"** วางลิงก์ทั้งก้อน แล้วระบบจับคู่ตามลำดับรายชื่อให้)
+4. กดบันทึก
+
+## วิธีใช้งาน (สำหรับนักเรียน)
+- เปิดห้องเรียน → แท็บ **"Canva"** → เห็นเฉพาะการ์ดของกิจกรรมที่ครูแจก พร้อมปุ่ม **"เปิด Canva ของฉัน"** → กดแล้ว redirect ไป Canva ตรงๆ
+- ไม่เห็นลิงก์ของเพื่อน
+
+## สิ่งที่จะสร้าง
+
+### Database (1 migration)
+ตาราง `canva_sessions` (ชุดกิจกรรม) และ `canva_assignments` (ลิงก์รายคน):
+
+```text
+canva_sessions
+  id, classroom_id, title, description, created_by, created_at
+
+canva_assignments
+  id, session_id, student_id (FK profiles), canva_url, opened_at, created_at
 ```
-Missing Supabase environment variable(s): SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY
-```
 
-### สาเหตุ
+RLS:
+- ครู (owner ห้อง) จัดการได้ทุกอย่างใน session/assignments ของห้องตัวเอง
+- นักเรียนอ่าน `canva_assignments` ที่ `student_id = auth.uid()` เท่านั้น (อ่าน session metadata ได้ถ้าเป็นสมาชิกห้อง)
+- GRANT ตามมาตรฐาน
 
-- ตอน build เวอร์ชัน production ที่ publish ไป **bundle ไม่มีค่า** `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` ฝังเข้าไป (Vite replace ตอน build time)
-- รอบที่แล้วผมแก้ `vite.config.ts` ให้มี fallback อ่านจาก `process.env.SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` ด้วย — **preview ใช้ build ใหม่นี้แล้ว จึงเปิดได้**
-- แต่ **เว็บ published ยังเป็น bundle เก่า** ที่ build ก่อนแก้ ตัว frontend change ไม่ deploy เองอัตโนมัติ ต้องกด Update ใน Publish dialog
+### Frontend (`src/routes/_authenticated/classrooms.$id.tsx`)
+- เพิ่มแท็บ **"Canva"** ในห้องเรียน
+- **มุมมองครู**: list ของ session, ปุ่มสร้าง/แก้ไข/ลบ, dialog ที่:
+  - ใส่ title
+  - ตารางแถวละ {นักเรียน, ลิงก์ Canva} เพิ่มแถวได้
+  - ปุ่ม "Bulk paste" — textarea วางลิงก์บรรทัดละ 1 → auto-pair กับสมาชิกห้องตามลำดับ
+  - validate ว่าเป็น `canva.com/...` หรือ `www.canva.com/...`
+- **มุมมองนักเรียน**: list ของ session ที่มีลิงก์ของตัวเอง พร้อมปุ่มเปิด (target=_blank, rel=noopener), แสดง badge "เปิดแล้ว" หลังคลิก (อัปเดต `opened_at`)
 
-## แผนแก้
+## สิ่งที่ไม่ทำ (ตามที่ user ยืนยัน)
+- ไม่ทำระบบ short link `/c/abc` redirect — ใช้ลิงก์ Canva ตรงๆ
+- ไม่ทำ live session / banner เด้ง — เป็นแบบ on-demand รายบุคคล
 
-1. **กดปุ่ม Publish → Update** เพื่อ re-build + re-deploy ตัว frontend ด้วย `vite.config.ts` ฉบับใหม่ที่มี env fallback
-2. หลัง update เสร็จ เปิด `https://class-arena-spark.lovable.app/` ใหม่ คาดว่าจะหายเอง
-
-ถ้าหลัง republish แล้วยัง error เหมือนเดิม แปลว่าตอน build บน Lovable Cloud ไม่มี `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY` ใน env ของ builder ด้วย ผมจะต้องทำ step ที่ 3:
-
-3. (สำรอง) ฉีดค่า Supabase URL + publishable key ลง `vite.config.ts` แบบ hardcode ใน `define` (publishable key เป็น public key ฝังในโค้ดได้ตามมาตรฐาน Supabase) เพื่อรับประกันว่า bundle ที่ build จะมีค่าฝังอยู่เสมอ ไม่ขึ้นกับ env ของ builder
-
-## หมายเหตุ
-
-- ไม่ต้องแก้โค้ดเพิ่มในขั้นที่ 1–2 — แค่กด Update
-- หากต้องทำขั้นที่ 3 ผมจะแก้เฉพาะ `vite.config.ts` เท่านั้น ไม่แตะ `src/integrations/supabase/client.ts` (ไฟล์ auto-generated)
+## ผลลัพธ์
+นักเรียนกดจากในห้องเรียน → เปิด Canva ของตัวเองได้เลย ไม่ต้องล็อกอินอีเมล Canva, ไม่ชนงานเพื่อน, ครูจัดชุดลิงก์ได้ในที่เดียว
