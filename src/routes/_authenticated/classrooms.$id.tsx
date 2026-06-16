@@ -2289,6 +2289,7 @@ function GradeRow({
   const [score, setScore] = useState(sub.score ?? 0);
   const [fb, setFb] = useState(sub.feedback ?? "");
   const [openStudent, setOpenStudent] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(sub.score == null);
   const groupIds = Array.isArray(sub.group_member_ids) ? (sub.group_member_ids as string[]) : [];
   return (
     <Card className="bg-muted/30">
