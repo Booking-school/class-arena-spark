@@ -389,6 +389,82 @@ export type Database = {
           },
         ]
       }
+      canva_assignments: {
+        Row: {
+          canva_url: string
+          created_at: string
+          id: string
+          opened_at: string | null
+          session_id: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          canva_url: string
+          created_at?: string
+          id?: string
+          opened_at?: string | null
+          session_id: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          canva_url?: string
+          created_at?: string
+          id?: string
+          opened_at?: string | null
+          session_id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canva_assignments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "canva_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canva_sessions: {
+        Row: {
+          classroom_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          classroom_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          classroom_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canva_sessions_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_conversations: {
         Row: {
           created_at: string
