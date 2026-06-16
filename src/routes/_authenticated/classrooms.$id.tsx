@@ -2293,55 +2293,89 @@ function GradeRow({
   const groupIds = Array.isArray(sub.group_member_ids) ? (sub.group_member_ids as string[]) : [];
   return (
     <Card className="bg-muted/30">
-      <CardContent className="pt-4 space-y-2">
-        <p className="text-xs text-muted-foreground">
-          {tr("นักเรียน:")}{" "}
-          <button
-            type="button"
-            onClick={() => setOpenStudent(sub.user_id)}
-            className="text-primary underline-offset-2 hover:underline font-medium"
-          >
-            {sub.profiles?.display_name ?? sub.user_id.slice(0, 8)}
-          </button>
-        </p>
-        {groupIds.length > 0 && (
-          <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
-            <span>{tr("ร่วมกับ:")}</span>
-            <GroupMembersInline
-              ids={groupIds}
-              onClick={(id) => setOpenStudent(id)}
+      <CardContent className="pt-3 pb-3 space-y-2">
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="w-full flex items-center justify-between gap-2 text-left"
+        >
+          <span className="text-xs text-muted-foreground truncate">
+            {tr("นักเรียน:")}{" "}
+            <span className="text-foreground font-medium">
+              {sub.profiles?.display_name ?? sub.user_id.slice(0, 8)}
+            </span>
+            {groupIds.length > 0 && (
+              <span className="ml-1">(+{groupIds.length})</span>
+            )}
+          </span>
+          <span className="flex items-center gap-2 shrink-0">
+            {sub.score != null ? (
+              <Badge variant="secondary" className="text-xs">
+                {sub.score}/{maxScore}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-xs">
+                {tr("ยังไม่ตรวจ")}
+              </Badge>
+            )}
+            <ChevronDown
+              className={`size-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
             />
+          </span>
+        </button>
+        {expanded && (
+          <div className="space-y-2 pt-1">
+            <p className="text-xs text-muted-foreground">
+              {tr("ดูโปรไฟล์:")}{" "}
+              <button
+                type="button"
+                onClick={() => setOpenStudent(sub.user_id)}
+                className="text-primary underline-offset-2 hover:underline font-medium"
+              >
+                {sub.profiles?.display_name ?? sub.user_id.slice(0, 8)}
+              </button>
+            </p>
+            {groupIds.length > 0 && (
+              <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
+                <span>{tr("ร่วมกับ:")}</span>
+                <GroupMembersInline
+                  ids={groupIds}
+                  onClick={(id) => setOpenStudent(id)}
+                />
+              </div>
+            )}
+            {sub.content && (
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{sub.content}</p>
+            )}
+            {sub.file_url && (
+              <MediaPreview
+                url={sub.file_url}
+                alt="ไฟล์แนบ"
+                fallbackLabel={tr("ไฟล์แนบ")}
+                thumbClassName="h-24 w-auto max-w-[160px]"
+              />
+            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Input
+                type="number"
+                max={maxScore}
+                value={score}
+                onChange={(e) => setScore(+e.target.value)}
+                className="w-24"
+              />
+              <span className="text-xs">/ {maxScore}</span>
+              <Input
+                value={fb}
+                onChange={(e) => setFb(e.target.value)}
+                placeholder={tr("ความคิดเห็น")}
+                className="flex-1 min-w-[160px]"
+              />
+              <Button size="sm" onClick={() => onGrade(score, fb)}>
+                {tr("บันทึก")}
+              </Button>
+            </div>
           </div>
         )}
-        {sub.content && (
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">{sub.content}</p>
-        )}
-        {sub.file_url && (
-          <MediaPreview
-            url={sub.file_url}
-            alt="ไฟล์แนบ"
-            fallbackLabel={tr("ไฟล์แนบ")}
-            thumbClassName="h-24 w-auto max-w-[160px]"
-          />
-        )}
-        <div className="flex items-center gap-2">
-          <Input
-            type="number"
-            max={maxScore}
-            value={score}
-            onChange={(e) => setScore(+e.target.value)}
-            className="w-24"
-          />
-          <span className="text-xs">/ {maxScore}</span>
-          <Input
-            value={fb}
-            onChange={(e) => setFb(e.target.value)}
-            placeholder={tr("ความคิดเห็น")}
-          />
-          <Button size="sm" onClick={() => onGrade(score, fb)}>
-            {tr("บันทึก")}
-          </Button>
-        </div>
       </CardContent>
       {openStudent && (
         <StudentSubmissionsDialog
