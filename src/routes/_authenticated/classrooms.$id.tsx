@@ -74,6 +74,7 @@ import {
   Pencil,
   Folder,
   ArrowLeft,
+  ChevronDown,
 } from "lucide-react";
 import { AssignmentComments } from "@/components/assignment-comments";
 import { QuestCard, StudentQuestQuestions } from "./quests";
