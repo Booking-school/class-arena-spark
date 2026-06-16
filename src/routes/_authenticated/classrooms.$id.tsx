@@ -2242,23 +2242,35 @@ function SubmissionsList({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const gradedCount = subs?.filter((s) => s.score != null).length ?? 0;
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium">การส่งงาน ({subs?.length ?? 0})</p>
+      <p className="text-sm font-medium">
+        {tr("การส่งงาน")} ({subs?.length ?? 0})
+        {subs && subs.length > 0 && (
+          <span className="ml-2 text-xs text-muted-foreground">
+            {tr("ตรวจแล้ว")} {gradedCount}/{subs.length}
+          </span>
+        )}
+      </p>
       {subs?.length === 0 && (
         <p className="text-xs text-muted-foreground">{tr("ยังไม่มีใครส่ง")}</p>
       )}
-      {subs?.map((s) => (
-        <GradeRow
-          key={s.id}
-          sub={s}
-          classroomId={classroomId}
-          maxScore={maxScore}
-          onGrade={(score, feedback) =>
-            grade.mutate({ id: s.id, score, feedback, userId: s.user_id })
-          }
-        />
-      ))}
+      {subs && subs.length > 0 && (
+        <div className="max-h-[480px] overflow-y-auto pr-1 space-y-2 rounded-md border border-border/60 bg-background/40 p-2">
+          {subs.map((s) => (
+            <GradeRow
+              key={s.id}
+              sub={s}
+              classroomId={classroomId}
+              maxScore={maxScore}
+              onGrade={(score, feedback) =>
+                grade.mutate({ id: s.id, score, feedback, userId: s.user_id })
+              }
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
