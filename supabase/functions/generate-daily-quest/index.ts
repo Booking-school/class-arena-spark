@@ -137,21 +137,28 @@ Deno.serve(async (req) => {
         tool_choice: { type: "function", function: { name: "design_quest" } },
       }),
     });
-    if (res.status === 429)
+    if (res.status === 429) {
+      console.error("[generate-daily-quest] AI gateway 429 rate_limit");
       return new Response(JSON.stringify({ error: "rate_limit" }), {
         status: 429,
         headers: { ...cors, "Content-Type": "application/json" },
       });
-    if (res.status === 402)
+    }
+    if (res.status === 402) {
+      console.error("[generate-daily-quest] AI gateway 402 credits");
       return new Response(JSON.stringify({ error: "credits" }), {
         status: 402,
         headers: { ...cors, "Content-Type": "application/json" },
       });
-    if (!res.ok)
-      return new Response(JSON.stringify({ error: await res.text() }), {
+    }
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("[generate-daily-quest] AI gateway error", res.status, errText);
+      return new Response(JSON.stringify({ error: errText }), {
         status: res.status,
         headers: { ...cors, "Content-Type": "application/json" },
       });
+    }
     const j = await res.json();
     const args = j.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
     const parsed = args
