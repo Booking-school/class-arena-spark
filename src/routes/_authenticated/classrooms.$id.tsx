@@ -623,6 +623,9 @@ function MaterialsTab({
     lesson_id: string;
   }>({ title: "", description: "", url: "", lesson_id: "none" });
   const [copying, setCopying] = useState<MaterialRow | null>(null);
+  const [bulkCopyOpen, setBulkCopyOpen] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [copyRoom, setCopyRoom] = useState<string>("");
   const [copyLesson, setCopyLesson] = useState<string>("none");
   const [lessonSort, setLessonSort] = useState<
