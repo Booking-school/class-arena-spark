@@ -175,6 +175,7 @@ Deno.serve(async (req) => {
       headers: { ...cors, "Content-Type": "application/json" },
     });
   } catch (e) {
+    console.error("[generate-daily-quest] crashed", e);
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
       headers: { ...cors, "Content-Type": "application/json" },
