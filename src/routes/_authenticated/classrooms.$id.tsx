@@ -1237,10 +1237,22 @@ function MaterialsTab({
       </Dialog>
 
       {/* Copy dialog */}
-      <Dialog open={!!copying} onOpenChange={(o) => !o && setCopying(null)}>
+      <Dialog
+        open={!!copying || bulkCopyOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setCopying(null);
+            setBulkCopyOpen(false);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{tr("คัดลอกเอกสารไป...")}</DialogTitle>
+            <DialogTitle>
+              {bulkCopyOpen
+                ? `${tr("คัดลอกเอกสารไป...")} (${selectedIds.size})`
+                : tr("คัดลอกเอกสารไป...")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
