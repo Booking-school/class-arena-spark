@@ -3569,7 +3569,20 @@ function DailyQuestsTab({ classroomId, isOwner }: { classroomId: string; isOwner
       const { data, error } = await supabase.functions.invoke("generate-daily-quest", {
         body: { topic: lesson.topic, content: lesson.content },
       });
-      if (error) throw error;
+      if (error) {
+        // FunctionsHttpError swallows the body — try to read it for a useful message
+        let detail = error.message;
+        const ctx = (error as { context?: Response }).context;
+        if (ctx && typeof ctx.text === "function") {
+          try {
+            const body = await ctx.text();
+            if (body) detail = body;
+          } catch {
+            // ignore
+          }
+        }
+        throw new Error(detail);
+      }
       const generated = data as Partial<DailyQuestPreview> & { error?: unknown };
       if (generated.error)
         throw new Error(
