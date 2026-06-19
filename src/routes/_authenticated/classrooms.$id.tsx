@@ -819,21 +819,32 @@ function MaterialsTab({
 
   const copy = useMutation({
     mutationFn: async () => {
-      if (!copying || !copyRoom) throw new Error(tr("เลือกห้องเรียนปลายทาง"));
-      const { error } = await supabase.from("materials").insert({
+      if (!copyRoom) throw new Error(tr("เลือกห้องเรียนปลายทาง"));
+      const sources: MaterialRow[] = bulkCopyOpen
+        ? allMaterials.filter((m) => selectedIds.has(m.id))
+        : copying
+          ? [copying]
+          : [];
+      if (sources.length === 0) throw new Error(tr("ไม่มีเอกสารที่เลือก"));
+      const rows = sources.map((s) => ({
         classroom_id: copyRoom,
-        title: copying.title,
-        description: copying.description,
-        url: copying.url,
+        title: s.title,
+        description: s.description,
+        url: s.url,
         lesson_id: copyLesson === "none" ? null : copyLesson,
-      });
+      }));
+      const { error } = await supabase.from("materials").insert(rows);
       if (error) throw error;
+      return sources.length;
     },
-    onSuccess: () => {
-      toast.success(tr("คัดลอกแล้ว"));
+    onSuccess: (count) => {
+      toast.success(tr("คัดลอกแล้ว") + ` (${count})`);
       setCopying(null);
+      setBulkCopyOpen(false);
       setCopyRoom("");
       setCopyLesson("none");
+      setSelectMode(false);
+      setSelectedIds(new Set());
       qc.invalidateQueries({ queryKey: ["materials", copyRoom] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -853,6 +864,21 @@ function MaterialsTab({
     setCopying(m);
     setCopyRoom(classroomId);
     setCopyLesson(m.lesson_id ?? "none");
+  }
+
+  function openBulkCopy() {
+    setBulkCopyOpen(true);
+    setCopyRoom(classroomId);
+    setCopyLesson("none");
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   return (
