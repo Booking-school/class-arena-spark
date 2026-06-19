@@ -1096,8 +1096,15 @@ function MaterialsTab({
         {filtered.map((m) => {
           const lesson = m.lesson_id ? lessonMap.get(m.lesson_id) : null;
           return (
-            <Card key={m.id}>
+            <Card key={m.id} className={selectMode && selectedIds.has(m.id) ? "ring-2 ring-primary" : ""}>
               <CardContent className="pt-4 flex items-start justify-between gap-3">
+                {selectMode && isOwner && (
+                  <Checkbox
+                    className="mt-1"
+                    checked={selectedIds.has(m.id)}
+                    onCheckedChange={() => toggleSelected(m.id)}
+                  />
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium">{m.title}</p>
