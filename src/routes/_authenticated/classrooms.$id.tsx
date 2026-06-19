@@ -44,6 +44,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -622,6 +623,9 @@ function MaterialsTab({
     lesson_id: string;
   }>({ title: "", description: "", url: "", lesson_id: "none" });
   const [copying, setCopying] = useState<MaterialRow | null>(null);
+  const [bulkCopyOpen, setBulkCopyOpen] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [copyRoom, setCopyRoom] = useState<string>("");
   const [copyLesson, setCopyLesson] = useState<string>("none");
   const [lessonSort, setLessonSort] = useState<
@@ -815,21 +819,32 @@ function MaterialsTab({
 
   const copy = useMutation({
     mutationFn: async () => {
-      if (!copying || !copyRoom) throw new Error(tr("เลือกห้องเรียนปลายทาง"));
-      const { error } = await supabase.from("materials").insert({
+      if (!copyRoom) throw new Error(tr("เลือกห้องเรียนปลายทาง"));
+      const sources: MaterialRow[] = bulkCopyOpen
+        ? allMaterials.filter((m) => selectedIds.has(m.id))
+        : copying
+          ? [copying]
+          : [];
+      if (sources.length === 0) throw new Error(tr("ไม่มีเอกสารที่เลือก"));
+      const rows = sources.map((s) => ({
         classroom_id: copyRoom,
-        title: copying.title,
-        description: copying.description,
-        url: copying.url,
+        title: s.title,
+        description: s.description,
+        url: s.url,
         lesson_id: copyLesson === "none" ? null : copyLesson,
-      });
+      }));
+      const { error } = await supabase.from("materials").insert(rows);
       if (error) throw error;
+      return sources.length;
     },
-    onSuccess: () => {
-      toast.success(tr("คัดลอกแล้ว"));
+    onSuccess: (count) => {
+      toast.success(tr("คัดลอกแล้ว") + ` (${count})`);
       setCopying(null);
+      setBulkCopyOpen(false);
       setCopyRoom("");
       setCopyLesson("none");
+      setSelectMode(false);
+      setSelectedIds(new Set());
       qc.invalidateQueries({ queryKey: ["materials", copyRoom] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -849,6 +864,21 @@ function MaterialsTab({
     setCopying(m);
     setCopyRoom(classroomId);
     setCopyLesson(m.lesson_id ?? "none");
+  }
+
+  function openBulkCopy() {
+    setBulkCopyOpen(true);
+    setCopyRoom(classroomId);
+    setCopyLesson("none");
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   return (
@@ -882,6 +912,38 @@ function MaterialsTab({
                 ? tr("ยังไม่ได้จัดบทเรียน")
                 : tr("ทั้งหมด")}
           </div>
+        )}
+        {isOwner && !isFolderView && filtered.length > 0 && (
+          <>
+            <Button
+              size="sm"
+              variant={selectMode ? "default" : "outline"}
+              onClick={() => {
+                setSelectMode((s) => !s);
+                setSelectedIds(new Set());
+              }}
+            >
+              {selectMode ? tr("ยกเลิกเลือก") : tr("เลือกหลายรายการ")}
+            </Button>
+            {selectMode && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSelectedIds(new Set(filtered.map((m) => m.id)))}
+                >
+                  {tr("เลือกทั้งหมด")}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={selectedIds.size === 0}
+                  onClick={openBulkCopy}
+                >
+                  {tr("คัดลอก")} ({selectedIds.size})
+                </Button>
+              </>
+            )}
+          </>
         )}
         {isOwner && (
           <Dialog open={open} onOpenChange={setOpen}>
@@ -1034,8 +1096,15 @@ function MaterialsTab({
         {filtered.map((m) => {
           const lesson = m.lesson_id ? lessonMap.get(m.lesson_id) : null;
           return (
-            <Card key={m.id}>
+            <Card key={m.id} className={selectMode && selectedIds.has(m.id) ? "ring-2 ring-primary" : ""}>
               <CardContent className="pt-4 flex items-start justify-between gap-3">
+                {selectMode && isOwner && (
+                  <Checkbox
+                    className="mt-1"
+                    checked={selectedIds.has(m.id)}
+                    onCheckedChange={() => toggleSelected(m.id)}
+                  />
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium">{m.title}</p>
@@ -1168,10 +1237,22 @@ function MaterialsTab({
       </Dialog>
 
       {/* Copy dialog */}
-      <Dialog open={!!copying} onOpenChange={(o) => !o && setCopying(null)}>
+      <Dialog
+        open={!!copying || bulkCopyOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setCopying(null);
+            setBulkCopyOpen(false);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{tr("คัดลอกเอกสารไป...")}</DialogTitle>
+            <DialogTitle>
+              {bulkCopyOpen
+                ? `${tr("คัดลอกเอกสารไป...")} (${selectedIds.size})`
+                : tr("คัดลอกเอกสารไป...")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
