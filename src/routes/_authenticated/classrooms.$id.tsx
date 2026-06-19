@@ -913,6 +913,38 @@ function MaterialsTab({
                 : tr("ทั้งหมด")}
           </div>
         )}
+        {isOwner && !isFolderView && filtered.length > 0 && (
+          <>
+            <Button
+              size="sm"
+              variant={selectMode ? "default" : "outline"}
+              onClick={() => {
+                setSelectMode((s) => !s);
+                setSelectedIds(new Set());
+              }}
+            >
+              {selectMode ? tr("ยกเลิกเลือก") : tr("เลือกหลายรายการ")}
+            </Button>
+            {selectMode && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSelectedIds(new Set(filtered.map((m) => m.id)))}
+                >
+                  {tr("เลือกทั้งหมด")}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={selectedIds.size === 0}
+                  onClick={openBulkCopy}
+                >
+                  {tr("คัดลอก")} ({selectedIds.size})
+                </Button>
+              </>
+            )}
+          </>
+        )}
         {isOwner && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
